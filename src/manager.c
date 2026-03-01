@@ -74,6 +74,7 @@ void manager_init() {
   global_manager->track_middle_tex = LoadTexture("assets/trackMiddle.png");
   global_manager->track_right_tex = LoadTexture("assets/trackRight.png");
   global_manager->platform_tex = LoadTexture("assets/platform.png");
+  global_manager->rubble_tex = LoadTexture("assets/rubble.png");
   global_manager->wall_tex = LoadTexture("assets/wall.png");
   global_manager->coin_tex = LoadTexture("assets/coin.png");
   global_manager->heart_tex = LoadTexture("assets/heart.png");

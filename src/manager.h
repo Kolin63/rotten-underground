@@ -27,6 +27,7 @@ struct manager {
   Texture2D track_middle_tex;
   Texture2D track_right_tex;
   Texture2D platform_tex;
+  Texture2D rubble_tex;
   Texture2D wall_tex;
   Texture2D coin_tex;
   Texture2D heart_tex;

@@ -19,6 +19,7 @@ typedef enum {
   TILE_TRACK_RIGHT = 7,
   TILE_PLATFORM = 8,
   TILE_WALL = 9,
+  TILE_RUBBLE = 10,
   TILE_COUNT
 } TileType;
 
