@@ -99,7 +99,8 @@ void manager_init() {
   }
 
   enemies_init(global_manager->enemies);
-  enemies_spawn(global_manager->enemies, tilemap_get_current_level()->rat_spawns);
+  enemies_spawn(global_manager->enemies,
+                tilemap_get_current_level()->rat_spawns);
 }
 
 void manager_cleanup() {
@@ -248,7 +249,8 @@ void manager_run_game() {
         tilemap_load_level(global_manager->current_level);
         global_manager->player->pos.x = TILE_SIZE;
         // spawn enemies and money for new level
-        enemies_spawn(global_manager->enemies);
+        enemies_spawn(global_manager->enemies,
+                      levels[global_manager->current_level].rat_spawns);
 
         // Basic money spawn for testing
         for (int i = 0; i < 5; i++) {
