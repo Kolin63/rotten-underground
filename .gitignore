@@ -7,3 +7,5 @@ game
 *.exe
 Makefile
 build.bat
+*.tiled-project
+*.tiled-session
