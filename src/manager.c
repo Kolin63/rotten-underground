@@ -255,9 +255,10 @@ void manager_run_game() {
     } else if (global_manager->current_level == 2) {
       if (global_manager->intro_step == 0) {
         global_manager->intro_step = 1;
-        static const char* crowbar[] = {"To use your crowbar, left click."};
+        static const char* crowbar[] = {"To use your crowbar, left click.",
+                                        "Kill the rat before continuing!"};
         dialog_show(global_manager->dialog, "Graywater Subway PA System",
-                    crowbar, 1);
+                    crowbar, 2);
       } else if (global_manager->intro_step == 1 &&
                  !global_manager->dialog->active) {
         // Check if all enemies are dead for post-kill dialogue
@@ -427,31 +428,32 @@ void manager_run_game() {
         dialog_show(global_manager->dialog, "The Rat King", bossIntro, 2);
       } else {
         // Boss death logic
-        if (global_manager->boss_hp <= 0) {
-          static const char* bossDead[] = {"Aargh... my kingdom...",
-                                           "*fades away*"};
-          dialog_show(global_manager->dialog, "The Rat King", bossDead, 2);
+        if (global_manager->dialog->active == false &&
+            global_manager->boss_stage == 4) {
+          global_manager->current_level = 11;
+          tilemap_load_level(11);
+        } else if (global_manager->boss_hp <= 0 &&
+                   global_manager->boss_stage == 3) {
+          global_manager->boss_stage = 4;
+          static const char* bossDead[] = {
+              "Is that Jeff, my roommate?",
+              "Well, there's no way I'm getting paid for overtime..."};
+          dialog_show(global_manager->dialog, "Johnny", bossDead, 2);
           // Game win logic?
         } else if (global_manager->boss_hp < 100 &&
                    global_manager->boss_stage == 2) {
           global_manager->boss_stage = 3;
 
-          static const char* stage3_player[] = {"What's the serum for?"};
-          dialog_show(global_manager->dialog, "Johnny", stage3_player, 1);
-
           static const char* stage3_rat[] = {
+              "It's not green goo, it's a specially formulated growth serum.",
               "My kind has been pushed around for long enough, it's time for "
               "us to rise!"};
-          dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 1);
+          dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 2);
         } else if (global_manager->boss_hp < 200 &&
                    global_manager->boss_stage == 1) {
           global_manager->boss_stage = 2;
           static const char* stage2_player[] = {"What's the green goo?"};
           dialog_show(global_manager->dialog, "Johnny", stage2_player, 1);
-
-          static const char* stage2_rat[] = {
-              "It's not green goo, it's a specially formulated growth serum."};
-          dialog_show(global_manager->dialog, "The Rat King", stage2_rat, 1);
         }
       }
     }
@@ -603,14 +605,29 @@ void manager_run_game() {
         if (global_manager->lives <= 0) {
           global_manager->lives = 0;
           global_manager->game_should_run = false;
+          if (CheckCollisionCircles(playerPos, 10.0f, enemyCenter,
+                                    ENEMY_RADIUS)) {
+            global_manager->player_invincibility_timer = 2.0f;
+            if (global_manager->enemies[i].type == 1) {
+              global_manager->lives -= 1;
+            } else {
+              global_manager->lives -= 2;
+            }
+            if (global_manager->lives <= 0) {
+              // Player death logic
+              global_manager->lives = 0;
+              global_manager->current_level = 12;
+              tilemap_load_level(12);
+            }
+            break;
+          }
         }
+      } else {
+        global_manager->contact_timer = 0.0f;
       }
-    } else {
-      global_manager->contact_timer = 0.0f;
+
+      render_game();
     }
-
-    render_game();
   }
-}
 
-struct manager* manager_get_global() { return global_manager; }
+  struct manager* manager_get_global() { return global_manager; }
