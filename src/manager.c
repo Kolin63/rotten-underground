@@ -449,6 +449,20 @@ void manager_run_game() {
               "My kind has been pushed around for long enough, it's time for "
               "us to rise!"};
           dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 2);
+
+          // this is to summon 10 rats after he says that line
+          int rats_summoned = 0;
+          for (int i = 0; i < MAX_ENEMIES && rats_summoned < 10; i++) {
+            struct enemy* elem = &global_manager->enemies[i];
+            if (elem->active == true) continue;
+
+            rats_summoned++;
+            elem->pos.x = (3 + rats_summoned * 1.25) * TILE_SIZE;
+            elem->pos.y = 4 * TILE_SIZE;
+            elem->active = true;
+            elem->health = 1;
+            elem->type = 0;
+          }
         } else if (global_manager->boss_hp < 200 &&
                    global_manager->boss_stage == 1) {
           global_manager->boss_stage = 2;
