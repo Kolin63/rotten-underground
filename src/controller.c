@@ -72,11 +72,11 @@ void controller_tick() {
   // }
 
   if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-    Vector2 worldMouse = GetScreenToWorld2D(GetMousePosition(), mgr->camera);
+    Vector2 mousePos = GetMousePosition();
     Vector2 playerCenter = (Vector2){p->pos.x + 10, p->pos.y + 10};
 
-    float dx = worldMouse.x - playerCenter.x;
-    float dy = worldMouse.y - playerCenter.y;
+    float dx = mousePos.x - playerCenter.x;
+    float dy = mousePos.y - playerCenter.y;
     float len = (float)sqrt(dx * dx + dy * dy);
 
     if (len > 0) {
