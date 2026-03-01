@@ -86,8 +86,11 @@ void render_ui() {
   if (mgr->current_level == 0 && mgr->intro_step >= 4) {
     Color col = WHITE;
     col.a = (unsigned char)(mgr->title_alpha * 255);
-    DrawTextEx(mgr->font, "Rotten Underground", (Vector2){300, 350}, 64, 2,
-               col);
+    const char* title = "Rotten Underground";
+    Vector2 size = MeasureTextEx(mgr->font, title, 64, 2);
+    Vector2 pos = {(GetScreenWidth() - size.x) / 2.0f,
+                   (GetScreenHeight() - size.y) / 2.0f};
+    DrawTextEx(mgr->font, title, pos, 64, 2, col);
   }
 
   // HUD (Coins, Health, Weapon)
@@ -108,21 +111,20 @@ void render_ui() {
 
   // Tutorial prompts
   if (mgr->current_level == 1) {
-    DrawTextEx(mgr->font, "WASD to Move | Exit ->", (Vector2){450, 850}, 24, 2,
-               WHITE);
+    DrawTextEx(mgr->font, "WASD to Move", (Vector2){400, 580}, 32, 2, BLACK);
   } else if (mgr->current_level == 2) {
-    DrawTextEx(mgr->font, "Left Click: Crowbar", (Vector2){480, 850}, 24, 2,
-               WHITE);
+    DrawTextEx(mgr->font, "LMB: Crowbar Attack", (Vector2){350, 580}, 32, 2,
+               BLACK);
   } else if (mgr->current_level == 4 && mgr->has_gun) {
-    DrawTextEx(mgr->font, "Right Click: Swap Weapons", (Vector2){440, 850}, 24,
-               2, WHITE);
+    DrawTextEx(mgr->font, "RMB: Swap Weapons", (Vector2){360, 580}, 32, 2,
+               BLACK);
   }
 }
 
 void render_hearts() {
   struct manager* mgr = manager_get_global();
   for (int i = 0; i < 3; i++) {
-    Vector2 pos = {1100 + i * 30, 40};
+    Vector2 pos = {820 + i * 30, 40};
     if (i < mgr->lives) {
       DrawTextureV(mgr->heart_tex, pos, WHITE);
     } else {

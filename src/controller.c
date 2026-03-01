@@ -19,6 +19,16 @@ void controller_tick() {
     return;
   }
 
+  // Block manual input during Level 0 (cinematic)
+  if (mgr->current_level == 0) {
+    if (mgr->dialog->active) {
+      if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
+        dialog_advance(mgr->dialog);
+      }
+    }
+    return;
+  }
+
   if (mgr->dialog->active) {
     if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
       dialog_advance(mgr->dialog);

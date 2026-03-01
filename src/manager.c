@@ -13,8 +13,8 @@
 #include "tile.h"
 #include "tilemaps.h"
 
-#define SCREEN_WIDTH 1200
-#define SCREEN_HEIGHT 900
+#define SCREEN_WIDTH 960
+#define SCREEN_HEIGHT 640
 
 static struct manager* global_manager;
 
@@ -88,11 +88,6 @@ void manager_init() {
   InitAudioDevice();
   global_manager->death_snd = LoadSound("assets/death.mp3");
 
-  static const char* intro[] = {"Welcome to the Graywater Subway System.",
-                                "Specifically, the 'Rotten Underground'.",
-                                "*you hear a faint scurrying sound*"};
-  dialog_show(global_manager->dialog, "System", intro, 3);
-
   global_manager->game_should_run = true;
 
   for (int i = 0; i < MAX_BULLETS; i++) {
@@ -149,48 +144,84 @@ void manager_run_game() {
           // Trigger bite
           global_manager->intro_step = 1;
           global_manager->intro_timer = 2.0f;
-          static const char* bite[] = {"*gets bitten by a rat*",
-                                       "Agh! These pesky rats....",
-                                       "*starts chasing after them*"};
-          dialog_show(global_manager->dialog, "Johnny", bite, 3);
+          static const char* bite[] = {"Agh! These pesky rats...."};
+          dialog_show(global_manager->dialog, "Johnny", bite, 1);
         } else if (global_manager->intro_step == 1) {
-          // Chase logic
           if (global_manager->intro_timer > 0) {
             global_manager->intro_timer -= dt;
-            global_manager->player->pos.x += 200 * dt;
+            // Player runs
+            global_manager->player->pos.x += 300 * dt;
+            if (global_manager->enemies[0].active) {
+              global_manager->enemies[0].anim_timer += dt;
+              if (global_manager->enemies[0].anim_timer >= 0.1f) {
+                global_manager->enemies[0].anim_timer = 0;
+                global_manager->enemies[0].frame =
+                    (global_manager->enemies[0].frame + 1) % 7;
+              }
+              global_manager->enemies[0].pos.x += 600 * dt;
+              global_manager->enemies[0].rotation = 180.0f;
+            }
           } else {
             global_manager->intro_step = 2;
             // Tunnel collapse
             struct tilemap* tm = tilemap_get_current();
             int p_tile_x = (int)(global_manager->player->pos.x / TILE_SIZE);
             for (size_t y = 0; y < tm->height; y++) {
-              for (int x = 0; x < p_tile_x - 3 && x < (int)tm->width; x++) {
+              // Collapse closely behind
+              for (int x = 0; x < p_tile_x - 1 && x < (int)tm->width; x++) {
                 tm->tiles[y * tm->width + x] = TILE_RUBBLE;
               }
             }
-            static const char* collapse[] = {"*tunnel collapses behind you*",
-                                             "Holy- What just happened?!"};
-            dialog_show(global_manager->dialog, "Johnny", collapse, 2);
+            // Deactivate rat
+            global_manager->enemies[0].active = false;
+
+            static const char* collapse[] = {"Holy- What just happened?!"};
+            dialog_show(global_manager->dialog, "Johnny", collapse, 1);
           }
         } else if (global_manager->intro_step == 2) {
-          global_manager->intro_step = 3;
-          static const char* sealed[] = {"It’s way too high, I’m sealed in.",
-                                         "I guess there’s only one way left."};
-          dialog_show(global_manager->dialog, "Johnny", sealed, 2);
+          // Immediately back up from the rubble
+          if (global_manager->player->pos.x > 500) {
+            global_manager->player->pos.x -= 200 * dt;
+          } else {
+            global_manager->intro_step = 3;
+            // Face left
+            global_manager->player->pos.x -= 2.0f;
+
+            // Re-activate rat for fade out context (invisible offscreen)
+            global_manager->enemies[0].active = true;
+            global_manager->enemies[0].pos.x = 2000.0f;
+
+            static const char* sealed[] = {
+                "Oh no...", "It's way too high, I'm sealed in.",
+                "I guess there's only one way left."};
+            dialog_show(global_manager->dialog, "Johnny", sealed, 3);
+          }
         } else if (global_manager->intro_step == 3) {
-          // Show Title
-          global_manager->intro_step = 4;
-          global_manager->intro_timer = 3.0f;
-          global_manager->title_alpha = 0.0f;
+          // Wait for dialogue to finish
+          if (!global_manager->dialog->active) {
+            // Show Title
+            global_manager->intro_step = 4;
+            global_manager->intro_timer = 2.5f;
+            global_manager->title_alpha = 0.0f;
+          }
         } else if (global_manager->intro_step == 4) {
           if (global_manager->intro_timer > 0) {
             global_manager->intro_timer -= dt;
-            global_manager->title_alpha += dt / 1.5f;
+            global_manager->title_alpha += dt / 1.0f;
             if (global_manager->title_alpha > 1.0f)
               global_manager->title_alpha = 1.0f;
           } else {
+            // Start fading out scene
             global_manager->intro_step = 5;
-            global_manager->intro_timer = 1.0f;
+            global_manager->intro_timer = 2.0f;
+          }
+        } else if (global_manager->intro_step == 5) {
+          // Wait briefly, fade to black logic happens in render
+          if (global_manager->intro_timer > 0) {
+            global_manager->intro_timer -= dt;
+            // Launch both off-screen effectively making them disappear
+            global_manager->player->pos.x += 800 * dt;
+            global_manager->enemies[0].pos.x += 800 * dt;
           }
         }
       }
@@ -264,8 +295,10 @@ void manager_run_game() {
 
     Vector2 playerPos = {global_manager->player->pos.x,
                          global_manager->player->pos.y};
-    enemies_update(global_manager->enemies, playerPos, dt,
-                   global_manager->dialog->active);
+    if (global_manager->current_level != 0) {
+      enemies_update(global_manager->enemies, playerPos, dt,
+                     global_manager->dialog->active);
+    }
 
     for (int i = 0; i < MAX_BULLETS; i++) {
       if (!global_manager->bullets[i].active) continue;
