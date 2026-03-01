@@ -88,7 +88,9 @@ struct tilemap* tilemap_get_current() { return current_tilemap; }
 const struct level* tilemap_get_current_level() { return current_level; }
 
 bool isWalkable(size_t tile_x, size_t tile_y) {
-  if (tile_x >= current_tilemap->width || tile_y >= current_tilemap->height) {
+  if (tile_x >= current_tilemap->width || tile_y >= current_tilemap->height ||
+      current_tilemap->tiles[tile_y * current_tilemap->width + tile_x] ==
+          TILE_WALL) {
     return false;
   }
   // All tiles are now walkable
