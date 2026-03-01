@@ -102,6 +102,13 @@ void controller_tick() {
     }
 
     if (mgr->active_weapon == 0) {  // Crowbar
+      if (mgr->current_level == 10) {
+        if (Vector2Distance(playerCenter,
+                            (struct Vector2){18 * TILE_SIZE, 9 * TILE_SIZE}) <
+            100) {
+          mgr->boss_hp -= 10;
+        }
+      }
       for (int i = 0; i < MAX_ENEMIES; i++) {
         if (!mgr->enemies[i].active) continue;
         Vector2 enemyPos = {mgr->enemies[i].pos.x + 8,

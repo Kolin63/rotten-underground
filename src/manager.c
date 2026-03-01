@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "bullet.h"
 #include "controller.h"
 #include "enemy.h"
 #include "player.h"
@@ -258,19 +259,27 @@ void manager_run_game() {
           static const char* bossDead[] = {"Aargh... my kingdom...",
                                            "*fades away*"};
           dialog_show(global_manager->dialog, "The Rat King", bossDead, 2);
-          global_manager->boss_active = false;
           // Game win logic?
         } else if (global_manager->boss_hp < 100 &&
                    global_manager->boss_stage == 2) {
           global_manager->boss_stage = 3;
-          static const char* stage3[] = {"ENOUGH! FEEL THE WRATH!"};
-          dialog_show(global_manager->dialog, "The Rat King", stage3, 1);
+
+          static const char* stage3_player[] = {"What's the serum for?"};
+          dialog_show(global_manager->dialog, "Johnny", stage3_player, 1);
+
+          static const char* stage3_rat[] = {
+              "My kind has been pushed around for long enough, it's time for "
+              "us to rise!"};
+          dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 1);
         } else if (global_manager->boss_hp < 200 &&
                    global_manager->boss_stage == 1) {
           global_manager->boss_stage = 2;
-          static const char* stage2[] = {
-              "You're tougher than you look, worker!"};
-          dialog_show(global_manager->dialog, "The Rat King", stage2, 1);
+          static const char* stage2_player[] = {"What's the green goo?"};
+          dialog_show(global_manager->dialog, "Johnny", stage2_player, 1);
+
+          static const char* stage2_rat[] = {
+              "It's not green goo, it's a specially formulated growth serum."};
+          dialog_show(global_manager->dialog, "The Rat King", stage2_rat, 1);
         }
       }
     }
@@ -291,6 +300,9 @@ void manager_run_game() {
           global_manager->money_items[i].active = true;
         }
       }
+      if (global_manager->current_level == 10) {
+        global_manager->boss_hp = 300;
+      }
     }
 
     Vector2 playerPos = {global_manager->player->pos.x,
@@ -304,12 +316,24 @@ void manager_run_game() {
       if (!global_manager->bullets[i].active) continue;
       bullet_update(&global_manager->bullets[i], dt);
 
+      if (global_manager->current_level == 10) {
+        if (CheckCollisionCircles(
+                global_manager->bullets[i].pos, BULLET_RADIUS,
+                (struct Vector2){19 * TILE_SIZE, 10 * TILE_SIZE},
+                ENEMY_RADIUS * 4)) {
+          global_manager->bullets[i].active = false;
+          global_manager->boss_hp -= 10;
+          continue;
+        }
+      }
+
       // Check collision with enemies
       for (int j = 0; j < MAX_ENEMIES; j++) {
         if (!global_manager->enemies[j].active) continue;
 
         Vector2 enemyCenter = (Vector2){global_manager->enemies[j].pos.x + 8,
                                         global_manager->enemies[j].pos.y + 8};
+
         if (CheckCollisionCircles(global_manager->bullets[i].pos, BULLET_RADIUS,
                                   enemyCenter, ENEMY_RADIUS)) {
           PlaySound(global_manager->death_snd);

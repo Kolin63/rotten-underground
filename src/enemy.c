@@ -4,6 +4,7 @@
 #include <raymath.h>
 #include <stdlib.h>
 
+#include "manager.h"
 #include "tile.h"
 
 void enemies_init(struct enemy enemies[MAX_ENEMIES]) {

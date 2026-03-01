@@ -66,6 +66,23 @@ void render_enemies() {
                      WHITE);
     }
   }
+
+  if (mgr->current_level == 10) {
+    int boss_stage;
+    if (mgr->boss_hp <= 300) boss_stage = 0;
+    if (mgr->boss_hp <= 150) boss_stage = 1;
+    if (mgr->boss_hp <= 0) boss_stage = 2;
+
+    Texture2D tex = mgr->boss_tex[boss_stage];
+    Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
+    Rectangle dest = {18 * TILE_SIZE, 9 * TILE_SIZE, 128, 128};
+    Vector2 origin = {16, 16};
+    DrawTexturePro(tex, source, dest, origin, 0, WHITE);
+
+    char healthbar[32];
+    snprintf(healthbar, sizeof(healthbar), "%i", mgr->boss_hp);
+    DrawTextEx(mgr->font, healthbar, (Vector2){400, -100}, 64, 2, WHITE);
+  }
 }
 
 void render_money() {
