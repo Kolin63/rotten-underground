@@ -16,6 +16,7 @@ void render_dialog();
 void render_ui();
 void render_hearts();
 void render_npcs();
+void render_end_credits();
 
 void render_game() {
   BeginDrawing();
@@ -30,6 +31,7 @@ void render_game() {
   render_player();
   render_money();
   render_npcs();
+  render_end_credits();
 
   EndMode2D();
 
@@ -124,6 +126,20 @@ void render_npcs() {
   if (mgr->current_level == 9) {
     DrawTexture(mgr->npc_tex[3], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
   }
+}
+
+void render_end_credits() {
+  struct manager* mgr = manager_get_global();
+  if (mgr->current_level != 11) return;
+
+  render_tiles();
+
+  const char* text =
+      "A game made by:\nDevansh Malhotra,\nAyan Bindal,\nand Colin Melican";
+  Vector2 size = MeasureTextEx(mgr->font, text, 64, 2);
+  Vector2 pos = {(GetScreenWidth() - size.x) / 2.0f,
+                 (GetScreenHeight() - size.y) / 2.0f};
+  DrawTextEx(mgr->font, text, pos, 64, 2, BLACK);
 }
 
 void render_ui() {

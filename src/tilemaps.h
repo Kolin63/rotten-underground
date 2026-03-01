@@ -5,7 +5,7 @@
 
 #include "pos.h"
 
-#define LEVELS_AMOUNT 11
+#define LEVELS_AMOUNT 12
 
 struct rat_spawn {
   struct pos_int pos;
@@ -35,6 +35,7 @@ static const struct level levels[LEVELS_AMOUNT] = {
     {30, 20, {2, 8}, {{{10, 5}, 2}, {{15, 12}, 3}, {{20, 5}, 2}, {{25, 15}, 2}}}, // 8: Gauntlet (Stage 3)
     {30, 20, {2, 8}, {}},                                           // 9: Crazy Guy (NPC)
     {30, 20, {5, 8}, {}},                                            // 10: Boss Arena
+    {30, 20, {15, 10}, {}}                                          // 11: end credits
 };
 // clang-format on
 
