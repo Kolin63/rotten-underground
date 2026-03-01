@@ -1,10 +1,12 @@
 #include <raylib.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "manager.h"
 #include "tile.h"
 
 int main(int argc, char** argv) {
+  srand(time(NULL));
   manager_init();
   atexit(manager_cleanup);
   // this is to help testing.

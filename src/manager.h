@@ -31,6 +31,7 @@ struct manager {
   Texture2D wall_tex;
   Texture2D labfloor_tex;
   Texture2D coin_tex;
+  Texture2D moneyicon_tex;
   Texture2D heart_tex;
   Texture2D halfheart_tex;
   Texture2D boss_tex[3];
@@ -49,6 +50,7 @@ struct manager {
   float crowbar_cooldown;
   float gun_cooldown;
   float player_invincibility_timer;
+  float contact_timer;
 
   int boss_stage;  // 1, 2, 3
   int boss_hp;

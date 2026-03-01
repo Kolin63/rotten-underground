@@ -5,6 +5,7 @@
 
 struct player {
   struct pos_float pos;
+  bool facing_right;
 };
 
 #endif

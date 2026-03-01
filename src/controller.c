@@ -57,32 +57,41 @@ void controller_tick() {
     float next_x = p->pos.x + velocity_x;
 
     if (next_x < 0) next_x = 0;
-    if (next_x > (MAP_WIDTH * TILE_SIZE) - 20)
-      next_x = (MAP_WIDTH * TILE_SIZE) - 20;
+    if (next_x > (MAP_WIDTH * TILE_SIZE) - 64)
+      next_x = (MAP_WIDTH * TILE_SIZE) - 64;
 
-    float check_x = (velocity_x > 0) ? (next_x + 20) : next_x;
+    float check_x = (velocity_x > 0) ? (next_x + 60) : (next_x + 4);
     int t_x = (int)(check_x / TILE_SIZE);
-    int t_y1 = (int)(p->pos.y / TILE_SIZE);
-    int t_y2 = (int)((p->pos.y + 19) / TILE_SIZE);
+    int t_y1 = (int)((p->pos.y + 4) / TILE_SIZE);
+    int t_ym = (int)((p->pos.y + 31) / TILE_SIZE);
+    int t_y2 = (int)((p->pos.y + 59) / TILE_SIZE);
 
-    if (isWalkable(t_x, t_y1) && isWalkable(t_x, t_y2)) {
+    if (isWalkable(t_x, t_y1) && isWalkable(t_x, t_ym) &&
+        isWalkable(t_x, t_y2)) {
       p->pos.x = next_x;
     }
+
+    if (velocity_x > 0)
+      p->facing_right = true;
+    else if (velocity_x < 0)
+      p->facing_right = false;
   }
 
   if (velocity_y != 0) {
     float next_y = p->pos.y + velocity_y;
 
     if (next_y < 0) next_y = 0;
-    if (next_y > (MAP_HEIGHT * TILE_SIZE) - 20)
-      next_y = (MAP_HEIGHT * TILE_SIZE) - 20;
+    if (next_y > (MAP_HEIGHT * TILE_SIZE) - 64)
+      next_y = (MAP_HEIGHT * TILE_SIZE) - 64;
 
-    float check_y = (velocity_y > 0) ? (next_y + 20) : next_y;
+    float check_y = (velocity_y > 0) ? (next_y + 60) : (next_y + 4);
     int t_y = (int)(check_y / TILE_SIZE);
-    int t_x1 = (int)(p->pos.x / TILE_SIZE);
-    int t_x2 = (int)((p->pos.x + 19) / TILE_SIZE);
+    int t_x1 = (int)((p->pos.x + 4) / TILE_SIZE);
+    int t_xm = (int)((p->pos.x + 31) / TILE_SIZE);
+    int t_x2 = (int)((p->pos.x + 59) / TILE_SIZE);
 
-    if (isWalkable(t_x1, t_y) && isWalkable(t_x2, t_y)) {
+    if (isWalkable(t_x1, t_y) && isWalkable(t_xm, t_y) &&
+        isWalkable(t_x2, t_y)) {
       p->pos.y = next_y;
     }
   }
@@ -95,7 +104,7 @@ void controller_tick() {
   // Left Click: money pickup -> crowbar attack -> gun fire
   if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     Vector2 mousePos = GetMousePosition();
-    Vector2 playerCenter = (Vector2){p->pos.x + 10, p->pos.y + 10};
+    Vector2 playerCenter = (Vector2){p->pos.x + 32, p->pos.y + 32};
 
     // Money Pickup Check
     for (int i = 0; i < MAX_MONEY; i++) {

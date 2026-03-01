@@ -44,6 +44,10 @@ void manager_init() {
   global_manager->lives = 6;
   global_manager->has_gun = false;
   global_manager->active_weapon = 0;
+  global_manager->crowbar_cooldown = 0.0f;
+  global_manager->gun_cooldown = 0.0f;
+  global_manager->player_invincibility_timer = 0.0f;
+  global_manager->contact_timer = 0.0f;
   global_manager->boss_active = false;
   global_manager->boss_hp = 100;
 
@@ -79,6 +83,7 @@ void manager_init() {
   global_manager->wall_tex = LoadTexture("assets/wall.png");
   global_manager->labfloor_tex = LoadTexture("assets/labFloor.png");
   global_manager->coin_tex = LoadTexture("assets/coin.png");
+  global_manager->moneyicon_tex = LoadTexture("assets/moneyIcon.png");
   global_manager->heart_tex = LoadTexture("assets/heart.png");
   global_manager->halfheart_tex = LoadTexture("assets/halfHeart.png");
   global_manager->boss_tex[0] = LoadTexture("assets/boss_1.png");
@@ -125,6 +130,7 @@ void manager_cleanup() {
   UnloadTexture(global_manager->wall_tex);
   UnloadTexture(global_manager->labfloor_tex);
   UnloadTexture(global_manager->coin_tex);
+  UnloadTexture(global_manager->moneyicon_tex);
   UnloadTexture(global_manager->heart_tex);
   UnloadTexture(global_manager->halfheart_tex);
   for (int i = 0; i < 3; i++) {
@@ -451,7 +457,7 @@ void manager_run_game() {
     }
 
     // Level Transition Logic
-    if (global_manager->player->pos.x > (MAP_WIDTH - 1) * TILE_SIZE - 20) {
+    if (global_manager->player->pos.x > (MAP_WIDTH * TILE_SIZE) - 70) {
       // Check if all enemies are defeated
       bool all_enemies_dead = true;
       if (global_manager->current_level != 0 &&
@@ -481,9 +487,19 @@ void manager_run_game() {
           enemies_spawn(global_manager->enemies,
                         levels[global_manager->current_level].rat_spawns);
 
-          // Basic money spawn for testing
+          // Random coin spawn on walkable tiles
           for (int i = 0; i < 5; i++) {
-            global_manager->money_items[i].pos = (Vector2){100 + i * 160, 100};
+            int cx, cy;
+            do {
+              cx =
+                  (rand() % (levels[global_manager->current_level].width - 4)) +
+                  2;
+              cy = (rand() %
+                    (levels[global_manager->current_level].height - 4)) +
+                   2;
+            } while (!isWalkable(cx, cy));
+            global_manager->money_items[i].pos =
+                (Vector2){cx * TILE_SIZE, cy * TILE_SIZE};
             global_manager->money_items[i].active = true;
           }
         }
@@ -492,15 +508,27 @@ void manager_run_game() {
         }
       } else {
         // Prevent player from exiting the screen if enemies are alive
-        global_manager->player->pos.x = (MAP_WIDTH - 1) * TILE_SIZE - 20;
+        global_manager->player->pos.x = (MAP_WIDTH - 1) * TILE_SIZE - 64;
       }
     }
 
-    Vector2 playerPos = {global_manager->player->pos.x,
-                         global_manager->player->pos.y};
+    Vector2 playerPos = {global_manager->player->pos.x + 32,
+                         global_manager->player->pos.y + 32};
     if (global_manager->current_level != 0) {
       enemies_update(global_manager->enemies, playerPos, dt,
                      global_manager->dialog->active);
+    }
+
+    // Walk-over coin pickup
+    Vector2 playerCenter = {global_manager->player->pos.x + 32,
+                            global_manager->player->pos.y + 32};
+    for (int i = 0; i < MAX_MONEY; i++) {
+      if (!global_manager->money_items[i].active) continue;
+      if (Vector2Distance(playerCenter, global_manager->money_items[i].pos) <
+          40.0f) {
+        global_manager->money += 10;
+        global_manager->money_items[i].active = false;
+      }
     }
 
     for (int i = 0; i < MAX_BULLETS; i++) {
@@ -543,31 +571,42 @@ void manager_run_game() {
       }
     }
 
-    // Check collision player vs enemies
-    if (global_manager->player_invincibility_timer <= 0) {
-      for (int i = 0; i < MAX_ENEMIES; i++) {
-        if (!global_manager->enemies[i].active) continue;
+    // Check collision player vs enemies (Rat Bites)
+    bool touching_enemy = false;
+    int enemy_damage = 0;
 
-        Vector2 enemyCenter = (Vector2){global_manager->enemies[i].pos.x + 8,
-                                        global_manager->enemies[i].pos.y + 8};
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+      if (!global_manager->enemies[i].active) continue;
 
-        if (CheckCollisionCircles(playerPos, 10.0f, enemyCenter,
-                                  ENEMY_RADIUS)) {
-          global_manager->player_invincibility_timer = 2.0f;
-          if (global_manager->enemies[i].type == 1) {
-            global_manager->lives -= 1;
-          } else {
-            global_manager->lives -= 2;
-          }
-          if (global_manager->lives <= 0) {
-            // Player death logic
-            global_manager->lives = 0;
-            global_manager->game_should_run =
-                false;  // Could restart level here instead
-          }
-          break;
+      Vector2 enemyCenter = (Vector2){global_manager->enemies[i].pos.x + 8,
+                                      global_manager->enemies[i].pos.y + 8};
+
+      if (CheckCollisionCircles(playerPos, 24.0f, enemyCenter, ENEMY_RADIUS)) {
+        touching_enemy = true;
+        // Stage 1 (Type 0) = damage 1 (half-heart)
+        // Stage 2/3 (Type 1, 2) = damage 2 (full heart)
+        if (global_manager->enemies[i].type == 0) {
+          enemy_damage = 1;
+        } else {
+          enemy_damage = 2;
+        }
+        break;
+      }
+    }
+
+    if (touching_enemy && global_manager->player_invincibility_timer <= 0) {
+      global_manager->contact_timer += dt;
+      if (global_manager->contact_timer >= 0.4f) {
+        global_manager->lives -= enemy_damage;
+        global_manager->player_invincibility_timer = 2.0f;
+        global_manager->contact_timer = 0.0f;
+        if (global_manager->lives <= 0) {
+          global_manager->lives = 0;
+          global_manager->game_should_run = false;
         }
       }
+    } else {
+      global_manager->contact_timer = 0.0f;
     }
 
     render_game();

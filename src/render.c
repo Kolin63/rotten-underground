@@ -50,8 +50,15 @@ void render_bullets() {
 
 void render_player() {
   const struct manager* mgr = manager_get_global();
-  DrawTexture(mgr->player_tex, (int)mgr->player->pos.x, (int)mgr->player->pos.y,
-              WHITE);
+  float width = (float)mgr->player_tex.width;
+  float height = (float)mgr->player_tex.height;
+
+  Rectangle source = {0.0f, 0.0f, width, height};
+  if (!mgr->player->facing_right) source.width = -width;
+
+  Rectangle dest = {(float)mgr->player->pos.x, (float)mgr->player->pos.y,
+                    width * 2.0f, height * 2.0f};
+  DrawTexturePro(mgr->player_tex, source, dest, (Vector2){0, 0}, 0.0f, WHITE);
 }
 
 void render_enemies() {
@@ -108,21 +115,43 @@ void render_dialog() { dialog_draw(manager_get_global()->dialog); }
 
 void render_npcs() {
   struct manager* mgr = manager_get_global();
+  bool flip = !mgr->player->facing_right;
+
   // NPC 1 (Crazy Man) on Level 3
   if (mgr->current_level == 3) {
-    DrawTexture(mgr->npc_tex[0], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+    Texture2D tex = mgr->npc_tex[0];
+    float w = (float)tex.width;
+    float h = (float)tex.height;
+    Rectangle src = {0, 0, flip ? -w : w, h};
+    Rectangle dst = {20 * TILE_SIZE, 8 * TILE_SIZE, w * 2.0f, h * 2.0f};
+    DrawTexturePro(tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
   }
   // NPC 2 (Helpless Person) on Level 4
   if (mgr->current_level == 4) {
-    DrawTexture(mgr->npc_tex[1], 22 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+    Texture2D tex = mgr->npc_tex[1];
+    float w = (float)tex.width;
+    float h = (float)tex.height;
+    Rectangle src = {0, 0, flip ? -w : w, h};
+    Rectangle dst = {22 * TILE_SIZE, 8 * TILE_SIZE, w * 2.0f, h * 2.0f};
+    DrawTexturePro(tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
   }
   // NPC 3 (Crazy Gal) on Level 6
   if (mgr->current_level == 6) {
-    DrawTexture(mgr->npc_tex[2], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+    Texture2D tex = mgr->npc_tex[2];
+    float w = (float)tex.width;
+    float h = (float)tex.height;
+    Rectangle src = {0, 0, flip ? -w : w, h};
+    Rectangle dst = {20 * TILE_SIZE, 8 * TILE_SIZE, w * 2.0f, h * 2.0f};
+    DrawTexturePro(tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
   }
   // NPC 4 (Crazy Guy) on Level 9
   if (mgr->current_level == 9) {
-    DrawTexture(mgr->npc_tex[3], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+    Texture2D tex = mgr->npc_tex[3];
+    float w = (float)tex.width;
+    float h = (float)tex.height;
+    Rectangle src = {0, 0, flip ? -w : w, h};
+    Rectangle dst = {20 * TILE_SIZE, 8 * TILE_SIZE, w * 2.0f, h * 2.0f};
+    DrawTexturePro(tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
   }
 }
 
@@ -142,11 +171,11 @@ void render_ui() {
 
   // HUD (Coins, Health, Weapon)
   if (mgr->current_level > 0) {
-    // Money with coin icon
-    DrawTextureV(mgr->coin_tex, (Vector2){10, 10}, WHITE);
+    // Money with money icon
+    DrawTextureEx(mgr->moneyicon_tex, (Vector2){10, 12}, 0.0f, 1.5f, WHITE);
     char moneyStr[32];
-    sprintf(moneyStr, "$%d", mgr->money);
-    DrawTextEx(mgr->font, moneyStr, (Vector2){30, 10}, 24, 2, YELLOW);
+    sprintf(moneyStr, "%d", mgr->money);
+    DrawTextEx(mgr->font, moneyStr, (Vector2){38, 10}, 24, 2, YELLOW);
 
     // Weapon
     const char* weaponName = (mgr->active_weapon == 0) ? "Crowbar" : "Gun";
