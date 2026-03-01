@@ -71,9 +71,6 @@ void controller_tick() {
   //   }
   // }
 
-  mgr->camera.target.x = p->pos.x;
-  mgr->camera.target.y = p->pos.y;
-
   if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     Vector2 mousePos = GetMousePosition();
     Vector2 playerCenter = (Vector2){p->pos.x + 10, p->pos.y + 10};
