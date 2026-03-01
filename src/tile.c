@@ -63,6 +63,9 @@ void tilemap_draw() {
       case TILE_PLATFORM:
         tex = mgr->platform_tex;
         break;
+      case TILE_RUBBLE:
+        tex = mgr->rubble_tex;
+        break;
       case TILE_WALL:
         tex = mgr->wall_tex;
         break;
@@ -86,9 +89,10 @@ struct tilemap* tilemap_get_current() { return current_tilemap; }
 const struct level* tilemap_get_current_level() { return current_level; }
 
 bool isWalkable(size_t tile_x, size_t tile_y) {
+  TileType tile_type =
+      current_tilemap->tiles[tile_y * current_tilemap->width + tile_x];
   if (tile_x >= current_tilemap->width || tile_y >= current_tilemap->height ||
-      current_tilemap->tiles[tile_y * current_tilemap->width + tile_x] ==
-          TILE_WALL) {
+      tile_type == TILE_WALL || tile_type == TILE_RUBBLE) {
     return false;
   }
   // All tiles are now walkable

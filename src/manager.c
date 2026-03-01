@@ -115,6 +115,7 @@ void manager_cleanup() {
   UnloadTexture(global_manager->track_middle_tex);
   UnloadTexture(global_manager->track_right_tex);
   UnloadTexture(global_manager->platform_tex);
+  UnloadTexture(global_manager->rubble_tex);
   UnloadTexture(global_manager->wall_tex);
   UnloadTexture(global_manager->coin_tex);
   UnloadTexture(global_manager->heart_tex);
@@ -161,7 +162,7 @@ void manager_run_game() {
             int p_tile_x = (int)(global_manager->player->pos.x / TILE_SIZE);
             for (size_t y = 0; y < tm->height; y++) {
               for (int x = 0; x < p_tile_x - 3 && x < (int)tm->width; x++) {
-                tm->tiles[y * tm->width + x] = TILE_WALL;
+                tm->tiles[y * tm->width + x] = TILE_RUBBLE;
               }
             }
             static const char* collapse[] = {"*tunnel collapses behind you*",
