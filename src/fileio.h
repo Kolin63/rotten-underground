@@ -1,6 +1,17 @@
 #ifndef CAMPFIRE_FILEIO_H
 #define CAMPFIRE_FILEIO_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
+struct fileio {
+  char* buf;
+  size_t buf_size;
+};
+
+// Moves all contents of file into a buffer
+void fileio_read_all(struct fileio* buf, FILE* file);
+
 // checks that the assets directory is working well
 // returns 0 if ok
 int fileio_check_integrity();
