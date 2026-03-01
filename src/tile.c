@@ -1,5 +1,6 @@
 #include "tile.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,13 +23,20 @@ void tilemap_load_level(int level) {
   current_tilemap->width = level_data->width;
   current_tilemap->height = level_data->height;
   current_tilemap->tiles =
-      realloc(current_tilemap->tiles, level_data->width * level_data->height * sizeof(TileType));
+      realloc(current_tilemap->tiles,
+              level_data->width * level_data->height * sizeof(TileType));
   const char* tilestr = level_data->tilemap;
   for (size_t i = 0; i < strlen(tilestr); i++) {
     char c = tilestr[i];
-    int tile_id = (c - '0') - 1;  // convert Tiled GID to local tile ID (firstgid=1)
+    int tile_id =
+        (c - '0') - 1;  // convert Tiled GID to local tile ID (firstgid=1)
     current_tilemap->tiles[i] = tile_id;
   }
+
+  manager_get_global()->camera.target.x = level_data->width / 2.0 * TILE_SIZE;
+  manager_get_global()->camera.target.y = level_data->height / 2.0 * TILE_SIZE;
+
+  printf("CAMERA SETTING POS ON LOAD LEVEL: %f, %f\n", manager_get_global()->camera.target.x, manager_get_global()->camera.target.y);
 }
 
 void tilemap_cleanup() {

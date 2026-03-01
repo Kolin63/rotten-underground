@@ -2,9 +2,11 @@
 
 #include <math.h>
 #include <raylib.h>
+#include <raymath.h>
 
 #include "dialog.h"
 #include "manager.h"
+#include "player.h"
 #include "tile.h"
 
 #define PLAYER_SPEED 5.0f
@@ -37,57 +39,49 @@ void controller_tick() {
   p->pos.x += velocity_x;
   p->pos.y += velocity_y;
 
-  // if (velocity_x != 0) {
-  //   float next_x = p->pos.x + velocity_x;
+  // Weapon swap (Right Click)
+  if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON) && mgr->has_gun) {
+    mgr->active_weapon = (mgr->active_weapon == 0) ? 1 : 0;
+  }
 
-  //   if (next_x < 0) next_x = 0;
-  //   if (next_x > (MAP_WIDTH * TILE_SIZE) - 20)
-  //     next_x = (MAP_WIDTH * TILE_SIZE) - 20;
-
-  //   float check_x = (velocity_x > 0) ? (next_x + 20) : next_x;
-  //   int t_x = (int)(check_x / TILE_SIZE);
-  //   int t_y1 = (int)(p->pos.y / TILE_SIZE);
-  //   int t_y2 = (int)((p->pos.y + 19) / TILE_SIZE);
-
-  //   if (isWalkable(t_x, t_y1) && isWalkable(t_x, t_y2)) {
-  //     p->pos.x = next_x;
-  //   }
-  // }
-
-  // if (velocity_y != 0) {
-  //   float next_y = p->pos.y + velocity_y;
-
-  //   if (next_y < 0) next_y = 0;
-  //   if (next_y > (MAP_HEIGHT * TILE_SIZE) - 20)
-  //     next_y = (MAP_HEIGHT * TILE_SIZE) - 20;
-
-  //   float check_y = (velocity_y > 0) ? (next_y + 20) : next_y;
-  //   int t_y = (int)(check_y / TILE_SIZE);
-  //   int t_x1 = (int)(p->pos.x / TILE_SIZE);
-  //   int t_x2 = (int)((p->pos.x + 19) / TILE_SIZE);
-
-  //   if (isWalkable(t_x1, t_y) && isWalkable(t_x2, t_y)) {
-  //     p->pos.y = next_y;
-  //   }
-  // }
-
-  mgr->camera.target.x = p->pos.x;
-  mgr->camera.target.y = p->pos.y;
-
+  // Left Click: money pickup -> crowbar attack -> gun fire
   if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     Vector2 mousePos = GetMousePosition();
     Vector2 playerCenter = (Vector2){p->pos.x + 10, p->pos.y + 10};
 
-    float dx = mousePos.x - playerCenter.x;
-    float dy = mousePos.y - playerCenter.y;
-    float len = (float)sqrt(dx * dx + dy * dy);
+    // Money Pickup Check
+    for (int i = 0; i < MAX_MONEY; i++) {
+      if (!mgr->money_items[i].active) continue;
+      if (Vector2Distance(playerCenter, mgr->money_items[i].pos) < 32.0f) {
+        mgr->money += 10;
+        mgr->money_items[i].active = false;
+        // "don't mind if I do..." voiceline
+        return;
+      }
+    }
 
-    if (len > 0) {
-      Vector2 dir = (Vector2){dx / len, dy / len};
-      for (int i = 0; i < MAX_BULLETS; i++) {
-        if (!mgr->bullets[i].active) {
-          bullet_fire(&mgr->bullets[i], playerCenter, dir);
-          break;
+    if (mgr->active_weapon == 0) {  // Crowbar
+      for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (!mgr->enemies[i].active) continue;
+        Vector2 enemyPos = {mgr->enemies[i].pos.x + 8,
+                            mgr->enemies[i].pos.y + 8};
+        if (Vector2Distance(playerCenter, enemyPos) < 64.0f) {
+          mgr->enemies[i].active = false;
+          PlaySound(mgr->death_snd);
+        }
+      }
+    } else if (mgr->active_weapon == 1) {  // Gun
+      float dx = mousePos.x - playerCenter.x;
+      float dy = mousePos.y - playerCenter.y;
+      float len = (float)sqrt(dx * dx + dy * dy);
+
+      if (len > 0) {
+        Vector2 dir = (Vector2){dx / len, dy / len};
+        for (int i = 0; i < MAX_BULLETS; i++) {
+          if (!mgr->bullets[i].active) {
+            bullet_fire(&mgr->bullets[i], playerCenter, dir);
+            break;
+          }
         }
       }
     }

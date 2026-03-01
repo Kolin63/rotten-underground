@@ -1,6 +1,7 @@
 #include "manager.h"
 
 #include <raylib.h>
+#include <raymath.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -10,6 +11,7 @@
 #include "player.h"
 #include "render.h"
 #include "tile.h"
+#include "tilemaps.h"
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 900
@@ -32,6 +34,22 @@ void manager_init() {
   global_manager->camera.target.y = 0;
   global_manager->camera.rotation = 0.0f;
   global_manager->camera.zoom = 1.0f;
+
+  global_manager->current_level = 0;
+  global_manager->intro_step = 0;
+  global_manager->intro_timer = 0;
+  global_manager->title_alpha = 0.0f;
+  global_manager->money = 0;
+  global_manager->lives = 3;
+  global_manager->has_gun = false;
+  global_manager->active_weapon = 0;
+  global_manager->boss_active = false;
+  global_manager->boss_hp = 100;
+
+  for (int i = 0; i < MAX_MONEY; i++) {
+    global_manager->money_items[i].active = false;
+  }
+  global_manager->boss_stage = 1;
 
   tilemap_init();
   tilemap_load_level(0);
@@ -56,6 +74,15 @@ void manager_init() {
   global_manager->track_middle_tex = LoadTexture("assets/trackMiddle.png");
   global_manager->track_right_tex = LoadTexture("assets/trackRight.png");
   global_manager->platform_tex = LoadTexture("assets/platform.png");
+  global_manager->wall_tex = LoadTexture("assets/wall.png");
+  global_manager->coin_tex = LoadTexture("assets/coin.png");
+  global_manager->heart_tex = LoadTexture("assets/heart.png");
+  global_manager->halfheart_tex = LoadTexture("assets/halfHeart.png");
+  global_manager->boss_tex[0] = LoadTexture("assets/boss_1.png");
+  global_manager->boss_tex[1] = LoadTexture("assets/boss_2.png");
+  global_manager->boss_tex[2] = LoadTexture("assets/boss_3.png");
+  global_manager->boss_head_knocked_tex =
+      LoadTexture("assets/boss_head_knocked.png");
   InitAudioDevice();
   global_manager->death_snd = LoadSound("assets/death.mp3");
 
@@ -87,6 +114,14 @@ void manager_cleanup() {
   UnloadTexture(global_manager->track_middle_tex);
   UnloadTexture(global_manager->track_right_tex);
   UnloadTexture(global_manager->platform_tex);
+  UnloadTexture(global_manager->wall_tex);
+  UnloadTexture(global_manager->coin_tex);
+  UnloadTexture(global_manager->heart_tex);
+  UnloadTexture(global_manager->halfheart_tex);
+  for (int i = 0; i < 3; i++) {
+    UnloadTexture(global_manager->boss_tex[i]);
+  }
+  UnloadTexture(global_manager->boss_head_knocked_tex);
   UnloadSound(global_manager->death_snd);
   UnloadFont(global_manager->font);
   CloseAudioDevice();
@@ -101,6 +136,125 @@ void manager_run_game() {
     float dt = GetFrameTime();
     controller_tick();
     dialog_update(global_manager->dialog, dt);
+
+    // Level Scripting Logic
+    if (global_manager->current_level == 0) {
+      if (!global_manager->dialog->active) {
+        if (global_manager->intro_step == 0) {
+          // Trigger bite
+          global_manager->intro_step = 1;
+          global_manager->intro_timer = 2.0f;
+          static const char* bite[] = {"*gets bitten by a rat*",
+                                       "Agh! These pesky rats....",
+                                       "*starts chasing after them*"};
+          dialog_show(global_manager->dialog, "Johnny", bite, 3);
+        } else if (global_manager->intro_step == 1) {
+          // Chase logic
+          if (global_manager->intro_timer > 0) {
+            global_manager->intro_timer -= dt;
+            global_manager->player->pos.x += 200 * dt;
+          } else {
+            global_manager->intro_step = 2;
+            // Tunnel collapse
+            struct tilemap* tm = tilemap_get_current();
+            int p_tile_x = (int)(global_manager->player->pos.x / TILE_SIZE);
+            for (size_t y = 0; y < tm->height; y++) {
+              for (int x = 0; x < p_tile_x - 3 && x < (int)tm->width; x++) {
+                tm->tiles[y * tm->width + x] = TILE_WALL;
+              }
+            }
+            static const char* collapse[] = {"*tunnel collapses behind you*",
+                                             "Holy- What just happened?!"};
+            dialog_show(global_manager->dialog, "Johnny", collapse, 2);
+          }
+        } else if (global_manager->intro_step == 2) {
+          global_manager->intro_step = 3;
+          static const char* sealed[] = {"It’s way too high, I’m sealed in.",
+                                         "I guess there’s only one way left."};
+          dialog_show(global_manager->dialog, "Johnny", sealed, 2);
+        } else if (global_manager->intro_step == 3) {
+          // Show Title
+          global_manager->intro_step = 4;
+          global_manager->intro_timer = 3.0f;
+          global_manager->title_alpha = 0.0f;
+        } else if (global_manager->intro_step == 4) {
+          if (global_manager->intro_timer > 0) {
+            global_manager->intro_timer -= dt;
+            global_manager->title_alpha += dt / 1.5f;
+            if (global_manager->title_alpha > 1.0f)
+              global_manager->title_alpha = 1.0f;
+          } else {
+            global_manager->intro_step = 5;
+            global_manager->intro_timer = 1.0f;
+          }
+        }
+      }
+    } else if (global_manager->current_level == 2) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        static const char* crowbar[] = {
+            "Press left mouse btn to use your crowbar"};
+        dialog_show(global_manager->dialog, "Tutorial", crowbar, 1);
+      }
+    } else if (global_manager->current_level == 4) {
+      if (!global_manager->has_gun) {
+        // Simple pickup logic: if player near center
+        if (Vector2Distance((Vector2){global_manager->player->pos.x,
+                                      global_manager->player->pos.y},
+                            (Vector2){500, 500}) < 50) {
+          global_manager->has_gun = true;
+          static const char* gun[] = {"Ooh, a gun! This might be useful...",
+                                      "Right Click to swap weapons."};
+          dialog_show(global_manager->dialog, "Johnny", gun, 2);
+        }
+      }
+    } else if (global_manager->current_level == 10) {
+      if (!global_manager->boss_active) {
+        global_manager->boss_active = true;
+        global_manager->boss_hp = 300;
+        global_manager->boss_stage = 1;
+        static const char* bossIntro[] = {"Who goes there?!",
+                                          "You shall not pass Graywater!"};
+        dialog_show(global_manager->dialog, "The Rat King", bossIntro, 2);
+      } else {
+        // Boss death logic
+        if (global_manager->boss_hp <= 0) {
+          static const char* bossDead[] = {"Aargh... my kingdom...",
+                                           "*fades away*"};
+          dialog_show(global_manager->dialog, "The Rat King", bossDead, 2);
+          global_manager->boss_active = false;
+          // Game win logic?
+        } else if (global_manager->boss_hp < 100 &&
+                   global_manager->boss_stage == 2) {
+          global_manager->boss_stage = 3;
+          static const char* stage3[] = {"ENOUGH! FEEL THE WRATH!"};
+          dialog_show(global_manager->dialog, "The Rat King", stage3, 1);
+        } else if (global_manager->boss_hp < 200 &&
+                   global_manager->boss_stage == 1) {
+          global_manager->boss_stage = 2;
+          static const char* stage2[] = {
+              "You're tougher than you look, worker!"};
+          dialog_show(global_manager->dialog, "The Rat King", stage2, 1);
+        }
+      }
+    }
+
+    // Level Transition Logic
+    if (global_manager->player->pos.x > (MAP_WIDTH - 1) * TILE_SIZE - 20) {
+      if (global_manager->current_level < LEVELS_AMOUNT - 1) {
+        global_manager->current_level++;
+        tilemap_load_level(global_manager->current_level);
+        global_manager->player->pos.x = TILE_SIZE;
+        // spawn enemies and money for new level
+        enemies_spawn(global_manager->enemies);
+
+        // Basic money spawn for testing
+        for (int i = 0; i < 5; i++) {
+          global_manager->money_items[i].pos = (Vector2){100 + i * 160, 100};
+          global_manager->money_items[i].active = true;
+        }
+      }
+    }
 
     Vector2 playerPos = {global_manager->player->pos.x,
                          global_manager->player->pos.y};
