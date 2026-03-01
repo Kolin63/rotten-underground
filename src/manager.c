@@ -35,7 +35,15 @@ void manager_init() {
   global_manager->dialog->font = global_manager->font;
 
   global_manager->player_tex = LoadTexture("assets/player.png");
-  global_manager->rat_tex = LoadTexture("assets/rat.png");
+  for (int i = 0; i < 7; i++) {
+    char path[64];
+    sprintf(path, "assets/ratStage1/1rat_%d.png", i + 1);
+    global_manager->rat_anim[i] = LoadTexture(path);
+  }
+  global_manager->gravel_tex = LoadTexture("assets/gravel.png");
+  global_manager->track_left_tex = LoadTexture("assets/trackLeft.png");
+  global_manager->track_right_tex = LoadTexture("assets/trackRight.png");
+  global_manager->platform_tex = LoadTexture("assets/platform.png");
   InitAudioDevice();
   global_manager->death_snd = LoadSound("assets/death.mp3");
 
@@ -57,7 +65,13 @@ void manager_init() {
 void manager_cleanup() {
   printf("Cleaning up...\n");
   UnloadTexture(global_manager->player_tex);
-  UnloadTexture(global_manager->rat_tex);
+  for (int i = 0; i < 7; i++) {
+    UnloadTexture(global_manager->rat_anim[i]);
+  }
+  UnloadTexture(global_manager->gravel_tex);
+  UnloadTexture(global_manager->track_left_tex);
+  UnloadTexture(global_manager->track_right_tex);
+  UnloadTexture(global_manager->platform_tex);
   UnloadSound(global_manager->death_snd);
   CloseAudioDevice();
   CloseWindow();
@@ -73,6 +87,11 @@ void manager_run_game() {
     float dt = GetFrameTime();
     controller_tick();
     dialog_update(global_manager->dialog, dt);
+
+    Vector2 playerPos = {global_manager->player->pos.x,
+                         global_manager->player->pos.y};
+    enemies_update(global_manager->enemies, playerPos, dt,
+                   global_manager->dialog->active);
 
     for (int i = 0; i < MAX_BULLETS; i++) {
       if (!global_manager->bullets[i].active) continue;

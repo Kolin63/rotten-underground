@@ -14,7 +14,11 @@ struct manager {
   struct dialog_box* dialog;
   Font font;
   Texture2D player_tex;
-  Texture2D rat_tex;
+  Texture2D rat_anim[7];
+  Texture2D gravel_tex;
+  Texture2D track_left_tex;
+  Texture2D track_right_tex;
+  Texture2D platform_tex;
   Sound death_snd;
   struct bullet bullets[MAX_BULLETS];
   struct enemy enemies[MAX_ENEMIES];

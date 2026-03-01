@@ -44,8 +44,14 @@ void render_enemies() {
   struct manager* mgr = manager_get_global();
   for (int i = 0; i < MAX_ENEMIES; i++) {
     if (mgr->enemies[i].active) {
-      DrawTexture(mgr->rat_tex, (int)mgr->enemies[i].pos.x,
-                  (int)mgr->enemies[i].pos.y, WHITE);
+      Texture2D tex = mgr->rat_anim[mgr->enemies[i].frame];
+      Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
+      // Dest rect centered on pos
+      Rectangle dest = {(float)mgr->enemies[i].pos.x + 16,
+                        (float)mgr->enemies[i].pos.y + 16, 32, 32};
+      Vector2 origin = {16, 16};
+      DrawTexturePro(tex, source, dest, origin, mgr->enemies[i].rotation,
+                     WHITE);
     }
   }
 }
