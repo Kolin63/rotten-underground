@@ -13,6 +13,8 @@
 
 static struct manager* global_manager;
 
+static bool cleanup_done = false;
+
 void manager_init() {
   srand(time(NULL));
   global_manager = malloc(sizeof(struct manager));
@@ -63,6 +65,8 @@ void manager_init() {
 }
 
 void manager_cleanup() {
+  if (cleanup_done) return;
+  cleanup_done = true;
   printf("Cleaning up...\n");
   UnloadTexture(global_manager->player_tex);
   for (int i = 0; i < 7; i++) {
@@ -73,9 +77,9 @@ void manager_cleanup() {
   UnloadTexture(global_manager->track_right_tex);
   UnloadTexture(global_manager->platform_tex);
   UnloadSound(global_manager->death_snd);
+  UnloadFont(global_manager->font);
   CloseAudioDevice();
   CloseWindow();
-  UnloadFont(global_manager->font);
   free(global_manager->dialog);
   free(global_manager->tilemap);
   free(global_manager->player);
