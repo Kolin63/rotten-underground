@@ -15,6 +15,7 @@ void render_money();
 void render_dialog();
 void render_ui();
 void render_hearts();
+void render_npcs();
 
 void render_game() {
   BeginDrawing();
@@ -28,6 +29,7 @@ void render_game() {
   render_enemies();
   render_player();
   render_money();
+  render_npcs();
 
   EndMode2D();
 
@@ -58,10 +60,18 @@ void render_enemies() {
     if (mgr->enemies[i].active) {
       Texture2D tex = mgr->rat_anim[mgr->enemies[i].frame];
       Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
+
+      float scale = 1.0f;
+      if (mgr->enemies[i].type == 2) scale = 1.6f;
+      if (mgr->enemies[i].type == 3) scale = 2.2f;
+
+      float dim = 32.0f * scale;
+      float offset = 16.0f * scale;
+
       // Dest rect centered on pos
       Rectangle dest = {(float)mgr->enemies[i].pos.x + 16,
-                        (float)mgr->enemies[i].pos.y + 16, 32, 32};
-      Vector2 origin = {16, 16};
+                        (float)mgr->enemies[i].pos.y + 16, dim, dim};
+      Vector2 origin = {offset, offset};
       DrawTexturePro(tex, source, dest, origin, mgr->enemies[i].rotation,
                      WHITE);
     }
@@ -96,6 +106,26 @@ void render_money() {
 
 void render_dialog() { dialog_draw(manager_get_global()->dialog); }
 
+void render_npcs() {
+  struct manager* mgr = manager_get_global();
+  // NPC 1 (Crazy Man) on Level 3
+  if (mgr->current_level == 3) {
+    DrawTexture(mgr->npc_tex[0], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+  }
+  // NPC 2 (Helpless Person) on Level 4
+  if (mgr->current_level == 4) {
+    DrawTexture(mgr->npc_tex[1], 22 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+  }
+  // NPC 3 (Crazy Gal) on Level 6
+  if (mgr->current_level == 6) {
+    DrawTexture(mgr->npc_tex[2], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+  }
+  // NPC 4 (Crazy Guy) on Level 9
+  if (mgr->current_level == 9) {
+    DrawTexture(mgr->npc_tex[3], 20 * TILE_SIZE, 8 * TILE_SIZE, WHITE);
+  }
+}
+
 void render_ui() {
   struct manager* mgr = manager_get_global();
 
@@ -112,10 +142,11 @@ void render_ui() {
 
   // HUD (Coins, Health, Weapon)
   if (mgr->current_level > 0) {
-    // Money
+    // Money with coin icon
+    DrawTextureV(mgr->coin_tex, (Vector2){10, 10}, WHITE);
     char moneyStr[32];
-    sprintf(moneyStr, "Money: $%d", mgr->money);
-    DrawTextEx(mgr->font, moneyStr, (Vector2){10, 10}, 24, 2, YELLOW);
+    sprintf(moneyStr, "$%d", mgr->money);
+    DrawTextEx(mgr->font, moneyStr, (Vector2){30, 10}, 24, 2, YELLOW);
 
     // Weapon
     const char* weaponName = (mgr->active_weapon == 0) ? "Crowbar" : "Gun";
@@ -125,25 +156,17 @@ void render_ui() {
     // Hearts (lives)
     render_hearts();
   }
-
-  // Tutorial prompts
-  if (mgr->current_level == 1) {
-    DrawTextEx(mgr->font, "WASD to Move", (Vector2){400, 580}, 32, 2, BLACK);
-  } else if (mgr->current_level == 2) {
-    DrawTextEx(mgr->font, "LMB: Crowbar Attack", (Vector2){350, 580}, 32, 2,
-               BLACK);
-  } else if (mgr->current_level == 4 && mgr->has_gun) {
-    DrawTextEx(mgr->font, "RMB: Swap Weapons", (Vector2){360, 580}, 32, 2,
-               BLACK);
-  }
 }
 
 void render_hearts() {
   struct manager* mgr = manager_get_global();
   for (int i = 0; i < 3; i++) {
-    Vector2 pos = {820 + i * 30, 40};
-    if (i < mgr->lives) {
+    Vector2 pos = {850 + i * 30, 10};
+    int half_hearts_for_this = mgr->lives - i * 2;
+    if (half_hearts_for_this >= 2) {
       DrawTextureV(mgr->heart_tex, pos, WHITE);
+    } else if (half_hearts_for_this == 1) {
+      DrawTextureV(mgr->halfheart_tex, pos, WHITE);
     } else {
       DrawTextureV(mgr->heart_tex, pos, (Color){100, 100, 100, 100});
     }

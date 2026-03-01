@@ -35,6 +35,7 @@ struct manager {
   Texture2D halfheart_tex;
   Texture2D boss_tex[3];
   Texture2D boss_head_knocked_tex;
+  Texture2D npc_tex[4];
 
   int current_level;
   int intro_step;
@@ -42,15 +43,19 @@ struct manager {
   float title_alpha;
 
   int money;
-  int lives;  // 3 lives max
+  int lives;  // 6 half-hearts (3 full hearts)
   bool has_gun;
   int active_weapon;  // 0: Crowbar, 1: Gun
+  float crowbar_cooldown;
+  float gun_cooldown;
+  float player_invincibility_timer;
 
   int boss_stage;  // 1, 2, 3
   int boss_hp;
   bool boss_active;
 
   Sound death_snd;
+  Music bgm;
   struct bullet bullets[MAX_BULLETS];
   struct enemy enemies[MAX_ENEMIES];
   struct money_item money_items[MAX_MONEY];

@@ -41,7 +41,7 @@ void manager_init() {
   global_manager->intro_timer = 0;
   global_manager->title_alpha = 0.0f;
   global_manager->money = 0;
-  global_manager->lives = 3;
+  global_manager->lives = 6;
   global_manager->has_gun = false;
   global_manager->active_weapon = 0;
   global_manager->boss_active = false;
@@ -86,8 +86,16 @@ void manager_init() {
   global_manager->boss_tex[2] = LoadTexture("assets/boss_3.png");
   global_manager->boss_head_knocked_tex =
       LoadTexture("assets/boss_head_knocked.png");
+  for (int i = 0; i < 4; i++) {
+    char npc_path[64];
+    sprintf(npc_path, "assets/npc%d.png", i + 1);
+    global_manager->npc_tex[i] = LoadTexture(npc_path);
+  }
   InitAudioDevice();
   global_manager->death_snd = LoadSound("assets/death.mp3");
+  global_manager->bgm =
+      LoadMusicStream("assets/audio/nullnel-mossy-sewer-169049.mp3");
+  PlayMusicStream(global_manager->bgm);
 
   global_manager->game_should_run = true;
 
@@ -123,7 +131,11 @@ void manager_cleanup() {
     UnloadTexture(global_manager->boss_tex[i]);
   }
   UnloadTexture(global_manager->boss_head_knocked_tex);
+  for (int i = 0; i < 4; i++) {
+    UnloadTexture(global_manager->npc_tex[i]);
+  }
   UnloadSound(global_manager->death_snd);
+  UnloadMusicStream(global_manager->bgm);
   UnloadFont(global_manager->font);
   CloseAudioDevice();
   CloseWindow();
@@ -137,6 +149,7 @@ void manager_run_game() {
     float dt = GetFrameTime();
     controller_tick();
     dialog_update(global_manager->dialog, dt);
+    UpdateMusicStream(global_manager->bgm);
 
     // Level Scripting Logic
     if (global_manager->current_level == 0) {
@@ -144,14 +157,16 @@ void manager_run_game() {
         if (global_manager->intro_step == 0) {
           // Trigger bite
           global_manager->intro_step = 1;
-          global_manager->intro_timer = 2.0f;
+          global_manager->intro_timer = 2.4f;
           static const char* bite[] = {"Agh! These pesky rats...."};
           dialog_show(global_manager->dialog, "Johnny", bite, 1);
         } else if (global_manager->intro_step == 1) {
           if (global_manager->intro_timer > 0) {
             global_manager->intro_timer -= dt;
             // Player runs
-            global_manager->player->pos.x += 300 * dt;
+            if (global_manager->intro_timer > 0.4f) {
+              global_manager->player->pos.x += 300 * dt;
+            }
             if (global_manager->enemies[0].active) {
               global_manager->enemies[0].anim_timer += dt;
               if (global_manager->enemies[0].anim_timer >= 0.1f) {
@@ -162,41 +177,38 @@ void manager_run_game() {
               global_manager->enemies[0].pos.x += 600 * dt;
               global_manager->enemies[0].rotation = 180.0f;
             }
+
+            // Trigger collapse at 2.0s (0.4s remaining)
+            if (global_manager->intro_timer <= 0.4f &&
+                global_manager->enemies[0].active) {
+              struct tilemap* tm = tilemap_get_current();
+              int p_tile_x = (int)(global_manager->player->pos.x / TILE_SIZE);
+              for (size_t y = 0; y < tm->height; y++) {
+                // Collapse closely behind
+                for (int x = 0; x < p_tile_x - 1 && x < (int)tm->width; x++) {
+                  tm->tiles[y * tm->width + x] = TILE_RUBBLE;
+                }
+              }
+              // Deactivate rat (and sets 'has collapsed' implicitly)
+              global_manager->enemies[0].active = false;
+              static const char* collapse[] = {"Holy- What just happened?!"};
+              dialog_show(global_manager->dialog, "Johnny", collapse, 1);
+            }
           } else {
             global_manager->intro_step = 2;
-            // Tunnel collapse
-            struct tilemap* tm = tilemap_get_current();
-            int p_tile_x = (int)(global_manager->player->pos.x / TILE_SIZE);
-            for (size_t y = 0; y < tm->height; y++) {
-              // Collapse closely behind
-              for (int x = 0; x < p_tile_x - 1 && x < (int)tm->width; x++) {
-                tm->tiles[y * tm->width + x] = TILE_RUBBLE;
-              }
-            }
-            // Deactivate rat
-            global_manager->enemies[0].active = false;
-
-            static const char* collapse[] = {"Holy- What just happened?!"};
-            dialog_show(global_manager->dialog, "Johnny", collapse, 1);
           }
         } else if (global_manager->intro_step == 2) {
-          // Immediately back up from the rubble
-          if (global_manager->player->pos.x > 500) {
-            global_manager->player->pos.x -= 200 * dt;
-          } else {
-            global_manager->intro_step = 3;
-            // Face left
-            global_manager->player->pos.x -= 2.0f;
+          global_manager->intro_step = 3;
+          // Face left
+          global_manager->player->pos.x -= 2.0f;
 
-            // Re-activate rat for fade out context (invisible offscreen)
-            global_manager->enemies[0].active = true;
-            global_manager->enemies[0].pos.x = 2000.0f;
+          // Re-activate rat for fade out context (invisible offscreen)
+          global_manager->enemies[0].active = true;
+          global_manager->enemies[0].pos.x = 2000.0f;
 
-            static const char* sealed[] = {
-                "Oh no...", "It's way too high, I'm sealed in.",
-                "I guess there's only one way left."};
-            dialog_show(global_manager->dialog, "Johnny", sealed, 3);
-          }
+          static const char* sealed[] = {"It's way too high, I'm sealed in.",
+                                         "I guess there's only one way left."};
+          dialog_show(global_manager->dialog, "Johnny", sealed, 2);
         } else if (global_manager->intro_step == 3) {
           // Wait for dialogue to finish
           if (!global_manager->dialog->active) {
@@ -221,29 +233,183 @@ void manager_run_game() {
           if (global_manager->intro_timer > 0) {
             global_manager->intro_timer -= dt;
             // Launch both off-screen effectively making them disappear
-            global_manager->player->pos.x += 800 * dt;
-            global_manager->enemies[0].pos.x += 800 * dt;
+            global_manager->player->pos.x += 200 * dt;
+            global_manager->enemies[0].pos.x += 200 * dt;
           }
         }
+      }
+    } else if (global_manager->current_level == 1) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        global_manager->lives = 6;
+        static const char* tut[] = {"WASD or Arrow Keys to move."};
+        dialog_show(global_manager->dialog, "Graywater Subway PA System", tut,
+                    1);
       }
     } else if (global_manager->current_level == 2) {
       if (global_manager->intro_step == 0) {
         global_manager->intro_step = 1;
-        static const char* crowbar[] = {
-            "Press left mouse btn to use your crowbar"};
-        dialog_show(global_manager->dialog, "Tutorial", crowbar, 1);
+        static const char* crowbar[] = {"To use your crowbar, left click."};
+        dialog_show(global_manager->dialog, "Graywater Subway PA System",
+                    crowbar, 1);
+      } else if (global_manager->intro_step == 1 &&
+                 !global_manager->dialog->active) {
+        // Check if all enemies are dead for post-kill dialogue
+        bool rats_alive = false;
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+          if (global_manager->enemies[i].active) {
+            rats_alive = true;
+            break;
+          }
+        }
+        if (!rats_alive) {
+          global_manager->intro_step = 2;
+          static const char* post[] = {
+              "I swear, there's been so many more rats lately,",
+              "well at least I have my trusty crowbar."};
+          dialog_show(global_manager->dialog, "Johnny", post, 2);
+        }
+      }
+    } else if (global_manager->current_level == 3) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        global_manager->lives = 6;
+        static const char* l3a[] = {"Hey! Are you stuck here too?"};
+        dialog_show(global_manager->dialog, "Crazy Man", l3a, 1);
+      } else if (global_manager->intro_step == 1 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 2;
+        static const char* l3b[] = {
+            "Yeah, the tunnels collapsed. Classic Graywater..."};
+        dialog_show(global_manager->dialog, "Johnny", l3b, 1);
+      } else if (global_manager->intro_step == 2 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 3;
+        static const char* l3c[] = {
+            "Hey man, be careful. There's some crazy rats in here."};
+        dialog_show(global_manager->dialog, "Crazy Man", l3c, 1);
+      } else if (global_manager->intro_step == 3 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 4;
+        static const char* l3d[] = {
+            "Don't worry, I'm in these tunnels all the time, I've seen it "
+            "all."};
+        dialog_show(global_manager->dialog, "Johnny", l3d, 1);
+      } else if (global_manager->intro_step == 4 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 5;
+        static const char* l3e[] = {"Don't say I didn't warn you..."};
+        dialog_show(global_manager->dialog, "Crazy Man", l3e, 1);
       }
     } else if (global_manager->current_level == 4) {
-      if (!global_manager->has_gun) {
-        // Simple pickup logic: if player near center
-        if (Vector2Distance((Vector2){global_manager->player->pos.x,
-                                      global_manager->player->pos.y},
-                            (Vector2){500, 500}) < 50) {
-          global_manager->has_gun = true;
-          static const char* gun[] = {"Ooh, a gun! This might be useful...",
-                                      "Right Click to swap weapons."};
-          dialog_show(global_manager->dialog, "Johnny", gun, 2);
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        static const char* l4a[] = {"HELP! HELP!"};
+        dialog_show(global_manager->dialog, "Helpless Person", l4a, 1);
+      } else if (global_manager->intro_step == 1 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 2;
+        global_manager->has_gun = true;
+        static const char* l4b[] = {
+            "Quick! Switch to your gun with right click, aim with your mouse, "
+            "and left click to shoot!"};
+        dialog_show(global_manager->dialog, "Helpless Person", l4b, 1);
+      } else if (global_manager->intro_step == 2) {
+        // Check if all enemies are dead for post-save dialogue
+        bool rats_alive = false;
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+          if (global_manager->enemies[i].active) {
+            rats_alive = true;
+            break;
+          }
         }
+        if (!rats_alive && !global_manager->dialog->active) {
+          global_manager->intro_step = 3;
+          static const char* l4c[] = {
+              "Oh my god! Thank you so much!",
+              "Quick tip, you can swap between your weapons with right click."};
+          dialog_show(global_manager->dialog, "Helpless Person", l4c, 2);
+        }
+      }
+    } else if (global_manager->current_level == 5) {
+      if (global_manager->intro_step == 0) {
+        // Check if all enemies are dead for post-fight dialogue
+        bool rats_alive = false;
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+          if (global_manager->enemies[i].active) {
+            rats_alive = true;
+            break;
+          }
+        }
+        if (!rats_alive && !global_manager->dialog->active) {
+          global_manager->intro_step = 1;
+          static const char* l5[] = {
+              "Strange... These rats are really big.",
+              "I guess that crazy guy wasn't so crazy after all."};
+          dialog_show(global_manager->dialog, "Johnny", l5, 2);
+        }
+      }
+    } else if (global_manager->current_level == 6) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        global_manager->lives = 6;
+        static const char* l6a[] = {
+            "Hey! Hey! You've seen those rats, I know it!",
+            "The government is releasing them to hide something down in the "
+            "tunnels!"};
+        dialog_show(global_manager->dialog, "Crazy Gal", l6a, 2);
+      } else if (global_manager->intro_step == 1 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 2;
+        static const char* l6b[] = {
+            "Sure lady. And I'm here 'cause I love it here."};
+        dialog_show(global_manager->dialog, "Johnny", l6b, 1);
+      } else if (global_manager->intro_step == 2 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 3;
+        static const char* l6c[] = {"I know I'm right!"};
+        dialog_show(global_manager->dialog, "Crazy Gal", l6c, 1);
+      }
+    } else if (global_manager->current_level == 7) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        static const char* l7[] = {
+            "Man, people just keep getting crazier and crazier...."};
+        dialog_show(global_manager->dialog, "Johnny", l7, 1);
+      }
+    } else if (global_manager->current_level == 8) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        static const char* l8a[] = {"What's that smell, smells like sh-"};
+        dialog_show(global_manager->dialog, "Johnny", l8a, 1);
+      } else if (global_manager->intro_step == 1 &&
+                 !global_manager->dialog->active) {
+        global_manager->intro_step = 2;
+        static const char* l8b[] = {"WHAT THE HELL IS THAT"};
+        dialog_show(global_manager->dialog, "Johnny", l8b, 1);
+      } else if (global_manager->intro_step == 2) {
+        // Check if all enemies are dead for post-kill dialogue
+        bool rats_alive = false;
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+          if (global_manager->enemies[i].active) {
+            rats_alive = true;
+            break;
+          }
+        }
+        if (!rats_alive && !global_manager->dialog->active) {
+          global_manager->intro_step = 3;
+          static const char* l8c[] = {"Ok seriously... What is going on?"};
+          dialog_show(global_manager->dialog, "Johnny", l8c, 1);
+        }
+      }
+    } else if (global_manager->current_level == 9) {
+      if (global_manager->intro_step == 0) {
+        global_manager->intro_step = 1;
+        global_manager->lives = 6;
+        static const char* l9[] = {
+            "Aliens are real! They're real and they're sending out",
+            "their army of alien rats!"};
+        dialog_show(global_manager->dialog, "Crazy Guy", l9, 2);
       }
     } else if (global_manager->current_level == 10) {
       if (!global_manager->boss_active) {
@@ -286,22 +452,47 @@ void manager_run_game() {
 
     // Level Transition Logic
     if (global_manager->player->pos.x > (MAP_WIDTH - 1) * TILE_SIZE - 20) {
-      if (global_manager->current_level < LEVELS_AMOUNT - 1) {
-        global_manager->current_level++;
-        tilemap_load_level(global_manager->current_level);
-        global_manager->player->pos.x = TILE_SIZE;
-        // spawn enemies and money for new level
-        enemies_spawn(global_manager->enemies,
-                      levels[global_manager->current_level].rat_spawns);
-
-        // Basic money spawn for testing
-        for (int i = 0; i < 5; i++) {
-          global_manager->money_items[i].pos = (Vector2){100 + i * 160, 100};
-          global_manager->money_items[i].active = true;
+      // Check if all enemies are defeated
+      bool all_enemies_dead = true;
+      if (global_manager->current_level != 0 &&
+          global_manager->current_level != 1 &&
+          global_manager->current_level != 3 &&
+          global_manager->current_level != 6 &&
+          global_manager->current_level != 9 &&
+          global_manager->current_level != 10) {
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+          if (global_manager->enemies[i].active) {
+            all_enemies_dead = false;
+            break;
+          }
         }
+      } else {
+        // NPC levels (3,6,9), intro (0), tutorial (1), boss (10) have no rats
+        all_enemies_dead = true;
       }
-      if (global_manager->current_level == 10) {
-        global_manager->boss_hp = 300;
+
+      if (all_enemies_dead) {
+        if (global_manager->current_level < LEVELS_AMOUNT - 1) {
+          global_manager->current_level++;
+          tilemap_load_level(global_manager->current_level);
+          global_manager->player->pos.x = TILE_SIZE;
+          global_manager->intro_step = 0;
+          // spawn enemies and money for new level
+          enemies_spawn(global_manager->enemies,
+                        levels[global_manager->current_level].rat_spawns);
+
+          // Basic money spawn for testing
+          for (int i = 0; i < 5; i++) {
+            global_manager->money_items[i].pos = (Vector2){100 + i * 160, 100};
+            global_manager->money_items[i].active = true;
+          }
+        }
+        if (global_manager->current_level == 10) {
+          global_manager->boss_hp = 300;
+        }
+      } else {
+        // Prevent player from exiting the screen if enemies are alive
+        global_manager->player->pos.x = (MAP_WIDTH - 1) * TILE_SIZE - 20;
       }
     }
 
@@ -327,7 +518,7 @@ void manager_run_game() {
         }
       }
 
-      // Check collision with enemies
+      // Check collision with enemies (bullets)
       for (int j = 0; j < MAX_ENEMIES; j++) {
         if (!global_manager->enemies[j].active) continue;
 
@@ -336,9 +527,11 @@ void manager_run_game() {
 
         if (CheckCollisionCircles(global_manager->bullets[i].pos, BULLET_RADIUS,
                                   enemyCenter, ENEMY_RADIUS)) {
-          PlaySound(global_manager->death_snd);
           global_manager->bullets[i].active = false;
-          global_manager->enemies[j].active = false;
+          global_manager->enemies[j].health -= 10;
+          if (global_manager->enemies[j].health <= 0) {
+            global_manager->enemies[j].active = false;
+          }
           break;
         }
       }
@@ -347,6 +540,33 @@ void manager_run_game() {
       int ty = (int)(global_manager->bullets[i].pos.y / TILE_SIZE);
       if (!isWalkable(tx, ty)) {
         global_manager->bullets[i].active = false;
+      }
+    }
+
+    // Check collision player vs enemies
+    if (global_manager->player_invincibility_timer <= 0) {
+      for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (!global_manager->enemies[i].active) continue;
+
+        Vector2 enemyCenter = (Vector2){global_manager->enemies[i].pos.x + 8,
+                                        global_manager->enemies[i].pos.y + 8};
+
+        if (CheckCollisionCircles(playerPos, 10.0f, enemyCenter,
+                                  ENEMY_RADIUS)) {
+          global_manager->player_invincibility_timer = 2.0f;
+          if (global_manager->enemies[i].type == 1) {
+            global_manager->lives -= 1;
+          } else {
+            global_manager->lives -= 2;
+          }
+          if (global_manager->lives <= 0) {
+            // Player death logic
+            global_manager->lives = 0;
+            global_manager->game_should_run =
+                false;  // Could restart level here instead
+          }
+          break;
+        }
       }
     }
 

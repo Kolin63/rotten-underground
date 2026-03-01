@@ -9,10 +9,17 @@
 #include "player.h"
 #include "tile.h"
 
-#define PLAYER_SPEED 5.0f
+#define PLAYER_SPEED 3.5f
 
 void controller_tick() {
   struct manager* mgr = manager_get_global();
+
+  // Cooldown counters
+  float dt = GetFrameTime();
+  if (mgr->crowbar_cooldown > 0) mgr->crowbar_cooldown -= dt;
+  if (mgr->gun_cooldown > 0) mgr->gun_cooldown -= dt;
+  if (mgr->player_invincibility_timer > 0)
+    mgr->player_invincibility_timer -= dt;
 
   if (IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) {
     mgr->game_should_run = false;
@@ -22,7 +29,7 @@ void controller_tick() {
   // Block manual input during Level 0 (cinematic)
   if (mgr->current_level == 0) {
     if (mgr->dialog->active) {
-      if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
+      if (IsKeyPressed(KEY_SPACE)) {
         dialog_advance(mgr->dialog);
       }
     }
@@ -30,7 +37,7 @@ void controller_tick() {
   }
 
   if (mgr->dialog->active) {
-    if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER)) {
+    if (IsKeyPressed(KEY_SPACE)) {
       dialog_advance(mgr->dialog);
     }
     return;
@@ -102,33 +109,51 @@ void controller_tick() {
     }
 
     if (mgr->active_weapon == 0) {  // Crowbar
-      if (mgr->current_level == 10) {
-        if (Vector2Distance(playerCenter,
-                            (struct Vector2){18 * TILE_SIZE, 9 * TILE_SIZE}) <
-            100) {
-          mgr->boss_hp -= 10;
+      if (mgr->current_level == 4 && !mgr->has_gun) {
+        // Simple pickup logic: if player near gun
+        if (Vector2Distance(playerCenter, (Vector2){500, 500}) < 50) {
+          mgr->has_gun = true;
+          static const char* gun[] = {"Ooh, a gun! This might be useful...",
+                                      "Right mouse button to swap weapons."};
+          dialog_show(mgr->dialog, "Johnny", gun, 2);
         }
       }
-      for (int i = 0; i < MAX_ENEMIES; i++) {
-        if (!mgr->enemies[i].active) continue;
-        Vector2 enemyPos = {mgr->enemies[i].pos.x + 8,
-                            mgr->enemies[i].pos.y + 8};
-        if (Vector2Distance(playerCenter, enemyPos) < 64.0f) {
-          mgr->enemies[i].active = false;
-          PlaySound(mgr->death_snd);
+
+      if (mgr->crowbar_cooldown <= 0) {
+        mgr->crowbar_cooldown = 1.0f;
+        if (mgr->current_level == 10) {
+          if (Vector2Distance(playerCenter,
+                              (struct Vector2){18 * TILE_SIZE, 9 * TILE_SIZE}) <
+              100) {
+            mgr->boss_hp -= 50;
+          }
+        }
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+          if (!mgr->enemies[i].active) continue;
+          Vector2 enemyPos = {mgr->enemies[i].pos.x + 8,
+                              mgr->enemies[i].pos.y + 8};
+          if (Vector2Distance(playerCenter, enemyPos) < 64.0f) {
+            mgr->enemies[i].health -= 50;
+            if (mgr->enemies[i].health <= 0) {
+              mgr->enemies[i].active = false;
+            }
+          }
         }
       }
     } else if (mgr->active_weapon == 1) {  // Gun
-      float dx = mousePos.x - playerCenter.x;
-      float dy = mousePos.y - playerCenter.y;
-      float len = (float)sqrt(dx * dx + dy * dy);
+      if (mgr->gun_cooldown <= 0) {
+        float dx = mousePos.x - playerCenter.x;
+        float dy = mousePos.y - playerCenter.y;
+        float len = (float)sqrt(dx * dx + dy * dy);
 
-      if (len > 0) {
-        Vector2 dir = (Vector2){dx / len, dy / len};
-        for (int i = 0; i < MAX_BULLETS; i++) {
-          if (!mgr->bullets[i].active) {
-            bullet_fire(&mgr->bullets[i], playerCenter, dir);
-            break;
+        if (len > 0) {
+          mgr->gun_cooldown = 0.15f;
+          Vector2 dir = (Vector2){dx / len, dy / len};
+          for (int i = 0; i < MAX_BULLETS; i++) {
+            if (!mgr->bullets[i].active) {
+              bullet_fire(&mgr->bullets[i], playerCenter, dir);
+              break;
+            }
           }
         }
       }
