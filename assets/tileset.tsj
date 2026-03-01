@@ -8,44 +8,39 @@
  "margin":0,
  "name":"rotten-underground",
  "spacing":0,
- "tilecount":2,
+ "tilecount":5,
  "tiledversion":"1.11.2",
  "tileheight":16,
  "tiles":[
         {
-         "id":0,
-         "image":"floor.png",
+         "id":2,
+         "image":"gravel.png",
          "imageheight":16,
          "imagewidth":16
         }, 
         {
-         "id":1,
-         "image":"wall.png",
+         "id":4,
+         "image":"trackLeft.png",
          "imageheight":16,
-         "imagewidth":16,
-         "objectgroup":
-            {
-             "draworder":"index",
-             "id":4,
-             "name":"",
-             "objects":[
-                    {
-                     "height":16,
-                     "id":3,
-                     "name":"",
-                     "rotation":0,
-                     "type":"",
-                     "visible":true,
-                     "width":16,
-                     "x":0,
-                     "y":0
-                    }],
-             "opacity":1,
-             "type":"objectgroup",
-             "visible":true,
-             "x":0,
-             "y":0
-            }
+         "imagewidth":16
+        }, 
+        {
+         "id":6,
+         "image":"trackMiddle.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":7,
+         "image":"trackRight.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":8,
+         "image":"platform.png",
+         "imageheight":16,
+         "imagewidth":16
         }],
  "tilewidth":16,
  "type":"tileset",
