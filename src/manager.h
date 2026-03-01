@@ -29,6 +29,7 @@ struct manager {
   Texture2D platform_tex;
   Texture2D rubble_tex;
   Texture2D wall_tex;
+  Texture2D labfloor_tex;
   Texture2D coin_tex;
   Texture2D heart_tex;
   Texture2D halfheart_tex;

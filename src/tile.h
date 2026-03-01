@@ -13,6 +13,7 @@
 #define MAP_HEIGHT tilemap_get_current()->height
 
 typedef enum {
+<<<<<<< HEAD
   TILE_GRAVEL = 3,
   TILE_TRACK_LEFT = 5,
   TILE_TRACK_MIDDLE = 7,
@@ -20,6 +21,16 @@ typedef enum {
   TILE_PLATFORM = 9,
   TILE_WALL = 10,
   TILE_RUBBLE = 11,
+=======
+  TILE_GRAVEL = 2,
+  TILE_TRACK_LEFT = 4,
+  TILE_TRACK_MIDDLE = 6,
+  TILE_TRACK_RIGHT = 7,
+  TILE_PLATFORM = 8,
+  TILE_WALL = 9,
+  TILE_RUBBLE = 10,
+  TILE_LABFLOOR = 11,
+>>>>>>> 6a7fd80b109ad873f2187721d939bc764fc2ac1a
   TILE_COUNT
 } TileType;
 
