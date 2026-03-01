@@ -10,3 +10,5 @@ build.bat
 *.tiled-project
 *.tiled-session
 _codeql_detected_source_root
+game.zip
+index.*
