@@ -8,7 +8,7 @@
  "margin":0,
  "name":"rotten-underground",
  "spacing":0,
- "tilecount":5,
+ "tilecount":6,
  "tiledversion":"1.11.2",
  "tileheight":16,
  "tiles":[
@@ -39,6 +39,12 @@
         {
          "id":8,
          "image":"platform.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":9,
+         "image":"wall.png",
          "imageheight":16,
          "imagewidth":16
         }],

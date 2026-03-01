@@ -98,7 +98,7 @@ void manager_init() {
   }
 
   enemies_init(global_manager->enemies);
-  enemies_spawn(global_manager->enemies);
+  enemies_spawn(global_manager->enemies, tilemap_get_current_level()->rat_spawns);
 }
 
 void manager_cleanup() {
