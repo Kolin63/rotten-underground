@@ -81,7 +81,7 @@ void render_enemies() {
 
     char healthbar[32];
     snprintf(healthbar, sizeof(healthbar), "%i", mgr->boss_hp);
-    DrawTextEx(mgr->font, healthbar, (Vector2){400, -100}, 64, 2, WHITE);
+    DrawTextEx(mgr->font, healthbar, (Vector2){400, 0}, 64, 2, BLACK);
   }
 }
 
