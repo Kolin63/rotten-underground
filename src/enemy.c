@@ -15,8 +15,8 @@ void enemies_init(struct enemy enemies[MAX_ENEMIES]) {
   }
 }
 
-void enemies_spawn(struct enemy enemies[MAX_ENEMIES],
-                   const struct tilemap* tm) {
+void enemies_spawn(struct enemy enemies[MAX_ENEMIES]) {
+  return;
   for (int i = 0; i < MAX_ENEMIES; i++) {
     if (!enemies[i].active) {
       int attempts = 0;
@@ -29,7 +29,7 @@ void enemies_spawn(struct enemy enemies[MAX_ENEMIES],
           continue;
         }
 
-        if (isWalkable(tm, tx, ty)) {
+        if (isWalkable(tx, ty)) {
           enemies[i].pos.x = (float)(tx * TILE_SIZE);
           enemies[i].pos.y = (float)(ty * TILE_SIZE);
           enemies[i].active = true;

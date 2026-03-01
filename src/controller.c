@@ -25,7 +25,6 @@ void controller_tick() {
   }
 
   struct player* p = mgr->player;
-  const struct tilemap* tm = mgr->tilemap;
 
   const bool up = IsKeyDown(KEY_W) || IsKeyDown(KEY_UP);
   const bool left = IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT);
@@ -35,39 +34,45 @@ void controller_tick() {
   const float velocity_x = (right - left) * PLAYER_SPEED;
   const float velocity_y = (down - up) * PLAYER_SPEED;
 
-  if (velocity_x != 0) {
-    float next_x = p->pos.x + velocity_x;
+  p->pos.x += velocity_x;
+  p->pos.y += velocity_y;
 
-    if (next_x < 0) next_x = 0;
-    if (next_x > (MAP_WIDTH * TILE_SIZE) - 20)
-      next_x = (MAP_WIDTH * TILE_SIZE) - 20;
+  // if (velocity_x != 0) {
+  //   float next_x = p->pos.x + velocity_x;
 
-    float check_x = (velocity_x > 0) ? (next_x + 20) : next_x;
-    int t_x = (int)(check_x / TILE_SIZE);
-    int t_y1 = (int)(p->pos.y / TILE_SIZE);
-    int t_y2 = (int)((p->pos.y + 19) / TILE_SIZE);
+  //   if (next_x < 0) next_x = 0;
+  //   if (next_x > (MAP_WIDTH * TILE_SIZE) - 20)
+  //     next_x = (MAP_WIDTH * TILE_SIZE) - 20;
 
-    if (isWalkable(tm, t_x, t_y1) && isWalkable(tm, t_x, t_y2)) {
-      p->pos.x = next_x;
-    }
-  }
+  //   float check_x = (velocity_x > 0) ? (next_x + 20) : next_x;
+  //   int t_x = (int)(check_x / TILE_SIZE);
+  //   int t_y1 = (int)(p->pos.y / TILE_SIZE);
+  //   int t_y2 = (int)((p->pos.y + 19) / TILE_SIZE);
 
-  if (velocity_y != 0) {
-    float next_y = p->pos.y + velocity_y;
+  //   if (isWalkable(t_x, t_y1) && isWalkable(t_x, t_y2)) {
+  //     p->pos.x = next_x;
+  //   }
+  // }
 
-    if (next_y < 0) next_y = 0;
-    if (next_y > (MAP_HEIGHT * TILE_SIZE) - 20)
-      next_y = (MAP_HEIGHT * TILE_SIZE) - 20;
+  // if (velocity_y != 0) {
+  //   float next_y = p->pos.y + velocity_y;
 
-    float check_y = (velocity_y > 0) ? (next_y + 20) : next_y;
-    int t_y = (int)(check_y / TILE_SIZE);
-    int t_x1 = (int)(p->pos.x / TILE_SIZE);
-    int t_x2 = (int)((p->pos.x + 19) / TILE_SIZE);
+  //   if (next_y < 0) next_y = 0;
+  //   if (next_y > (MAP_HEIGHT * TILE_SIZE) - 20)
+  //     next_y = (MAP_HEIGHT * TILE_SIZE) - 20;
 
-    if (isWalkable(tm, t_x1, t_y) && isWalkable(tm, t_x2, t_y)) {
-      p->pos.y = next_y;
-    }
-  }
+  //   float check_y = (velocity_y > 0) ? (next_y + 20) : next_y;
+  //   int t_y = (int)(check_y / TILE_SIZE);
+  //   int t_x1 = (int)(p->pos.x / TILE_SIZE);
+  //   int t_x2 = (int)((p->pos.x + 19) / TILE_SIZE);
+
+  //   if (isWalkable(t_x1, t_y) && isWalkable(t_x2, t_y)) {
+  //     p->pos.y = next_y;
+  //   }
+  // }
+
+  mgr->camera.target.x = p->pos.x;
+  mgr->camera.target.y = p->pos.y;
 
   if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     Vector2 mousePos = GetMousePosition();

@@ -5,14 +5,13 @@
 #include "dialog.h"
 #include "enemy.h"
 #include "player.h"
-#include "tile.h"
 
 struct manager {
   bool game_should_run;
   struct player* player;
-  struct tilemap* tilemap;
   struct dialog_box* dialog;
   Font font;
+  Camera2D camera;
   Texture2D player_tex;
   Texture2D rat_anim[7];
   Texture2D gravel_tex;

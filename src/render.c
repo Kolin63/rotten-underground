@@ -16,6 +16,8 @@ void render_game() {
 
   ClearBackground(BLACK);
 
+  BeginMode2D(manager_get_global()->camera);
+
   render_tiles();
   render_bullets();
   render_enemies();
@@ -25,7 +27,7 @@ void render_game() {
   EndDrawing();
 }
 
-void render_tiles() { tilemap_draw(manager_get_global()->tilemap); }
+void render_tiles() { tilemap_draw(); }
 
 void render_bullets() {
   struct manager* mgr = manager_get_global();

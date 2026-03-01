@@ -11,6 +11,9 @@
 #include "render.h"
 #include "tile.h"
 
+#define SCREEN_WIDTH 1200
+#define SCREEN_HEIGHT 900
+
 static struct manager* global_manager;
 
 static bool cleanup_done = false;
@@ -23,14 +26,20 @@ void manager_init() {
   global_manager->player->pos.x = 4 * TILE_SIZE;
   global_manager->player->pos.y = 4 * TILE_SIZE;
 
-  global_manager->tilemap = malloc(sizeof(struct tilemap));
-  tilemap_init(global_manager->tilemap);
+  global_manager->camera.offset.x = SCREEN_WIDTH / 2.0;
+  global_manager->camera.offset.y = SCREEN_HEIGHT / 2.0;
+  global_manager->camera.target.x = 0;
+  global_manager->camera.target.y = 0;
+  global_manager->camera.rotation = 0.0f;
+  global_manager->camera.zoom = 1.0f;
+
+  tilemap_init();
+  tilemap_load_level(0);
 
   global_manager->dialog = malloc(sizeof(struct dialog_box));
   dialog_init(global_manager->dialog);
 
-  InitWindow(MAP_WIDTH * TILE_SIZE, MAP_HEIGHT * TILE_SIZE,
-             "Rotten Underground");
+  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Rotten Underground");
   SetTargetFPS(60);
 
   global_manager->font = LoadFont("assets/Jersey15-Regular.ttf");
@@ -61,7 +70,7 @@ void manager_init() {
   }
 
   enemies_init(global_manager->enemies);
-  enemies_spawn(global_manager->enemies, global_manager->tilemap);
+  enemies_spawn(global_manager->enemies);
 }
 
 void manager_cleanup() {
@@ -81,7 +90,6 @@ void manager_cleanup() {
   CloseAudioDevice();
   CloseWindow();
   free(global_manager->dialog);
-  free(global_manager->tilemap);
   free(global_manager->player);
   free(global_manager);
 }
@@ -118,7 +126,7 @@ void manager_run_game() {
 
       int tx = (int)(global_manager->bullets[i].pos.x / TILE_SIZE);
       int ty = (int)(global_manager->bullets[i].pos.y / TILE_SIZE);
-      if (!isWalkable(global_manager->tilemap, tx, ty)) {
+      if (!isWalkable(tx, ty)) {
         global_manager->bullets[i].active = false;
       }
     }

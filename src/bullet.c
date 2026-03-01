@@ -19,8 +19,8 @@ void bullet_update(struct bullet* b, float dt) {
   b->pos.x += b->velocity.x * dt;
   b->pos.y += b->velocity.y * dt;
 
-  if (b->pos.x < 0 || b->pos.x > MAP_WIDTH * TILE_SIZE || b->pos.y < 0 ||
-      b->pos.y > MAP_HEIGHT * TILE_SIZE) {
+  if (b->pos.x < 0 || b->pos.x > tilemap_get_current()->width * TILE_SIZE ||
+      b->pos.y < 0 || b->pos.y > tilemap_get_current()->height * TILE_SIZE) {
     b->active = false;
     return;
   }
