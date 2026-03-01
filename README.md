@@ -15,9 +15,10 @@ was able to do their job and was taking adequate breaks, along with ensuring the
 the actual experience. He also did the majority of the pixel art, helped by lending a pair of fresh eyes for the code, and finding the music, font, and other research.
 He is a 17 year old programmer who has been coding for over 8 years now. He mainly knows Python and Java, 
 but uses Scratch, Circuitpython, Micropython, and Javascript from time to time. He specializes in computers and servers,
-but enjoys tinkering with tech overall. 
-He documents his journey on his [Youtube channel](https://www.youtube.com/@3XAY/) and his [website](https://3xay.github.io/).</p>
+but enjoys tinkering with tech overall. This is his second game jam, with his first being Counterspell with Colin where they won 2nd place globally.
+He documents his journey on his <a href= "https://www.youtube.com/@3XAY/">Youtube channel</a> and his <a href= "https://3xay.github.io/">website</a>.</p>
 <h2>Devansh Malhotra - <a href= "https://github.com/DevanshMalhotra17/">@DevanshMalhotra17</a></h2>
-<p>Devansh was another programmer on the team.</p>
+<p>Devansh was another programmer on the team. He helped with various crucial aspects such as collisions, the dialoge system, and the levels system. He is a 15-year old Junior that has been coding for three years.
+He specializes in Java, Python, JavaScript, and React, but dabbles in C++ and C. This is his first game jam. You can learn more about him at <a href="https://devanshmalhotra17.github.io/"> his website</a>.</p>
 <h1>Music Credits</h1>
 <p>Mossy Sewer by NullNel on Pixabay</p>
