@@ -35,8 +35,6 @@ void tilemap_load_level(int level) {
 
   manager_get_global()->camera.target.x = level_data->width / 2.0 * TILE_SIZE;
   manager_get_global()->camera.target.y = level_data->height / 2.0 * TILE_SIZE;
-
-  printf("CAMERA SETTING POS ON LOAD LEVEL: %f, %f\n", manager_get_global()->camera.target.x, manager_get_global()->camera.target.y);
 }
 
 void tilemap_cleanup() {
