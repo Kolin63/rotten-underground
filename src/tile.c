@@ -35,6 +35,9 @@ void tilemap_load_level(int level) {
 
   manager_get_global()->camera.target.x = level_data->width / 2.0 * TILE_SIZE;
   manager_get_global()->camera.target.y = level_data->height / 2.0 * TILE_SIZE;
+
+  manager_get_global()->player->pos.x = level_data->player_spawn.x * TILE_SIZE;
+  manager_get_global()->player->pos.y = level_data->player_spawn.y * TILE_SIZE;
 }
 
 void tilemap_cleanup() {
