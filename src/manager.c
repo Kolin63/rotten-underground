@@ -53,6 +53,7 @@ void manager_init() {
   }
   global_manager->gravel_tex = LoadTexture("assets/gravel.png");
   global_manager->track_left_tex = LoadTexture("assets/trackLeft.png");
+  global_manager->track_middle_tex = LoadTexture("assets/trackMiddle.png");
   global_manager->track_right_tex = LoadTexture("assets/trackRight.png");
   global_manager->platform_tex = LoadTexture("assets/platform.png");
   InitAudioDevice();
@@ -83,6 +84,7 @@ void manager_cleanup() {
   }
   UnloadTexture(global_manager->gravel_tex);
   UnloadTexture(global_manager->track_left_tex);
+  UnloadTexture(global_manager->track_middle_tex);
   UnloadTexture(global_manager->track_right_tex);
   UnloadTexture(global_manager->platform_tex);
   UnloadSound(global_manager->death_snd);
