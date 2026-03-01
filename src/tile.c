@@ -22,16 +22,35 @@ void tilemap_load_level(int level) {
   current_level = level_data;
   current_tilemap->width = level_data->width;
   current_tilemap->height = level_data->height;
-  current_tilemap->tiles =
-      realloc(current_tilemap->tiles,
-              level_data->width * level_data->height * sizeof(TileType));
-  const char* tilestr = level_data->tilemap;
-  for (size_t i = 0; i < strlen(tilestr); i++) {
-    char c = tilestr[i];
-    int tile_id =
-        (c - '0') - 1;  // convert Tiled GID to local tile ID (firstgid=1)
-    current_tilemap->tiles[i] = tile_id;
+
+  char filename[128];
+  snprintf(filename, sizeof(filename), "assets/levels/level%d.tmj", level);
+  char* file_text = LoadFileText(filename);
+
+  if (file_text == NULL) {
+    printf("ERROR: Could not load level file: %s\n", filename);
+    return;
   }
+
+  // Simple JSON parser for "data" array
+  char* data_start = strstr(file_text, "\"data\":[");
+  if (data_start) {
+    data_start += 8;  // move past "data":[
+    current_tilemap->tiles =
+        realloc(current_tilemap->tiles,
+                level_data->width * level_data->height * sizeof(TileType));
+
+    char* ptr = data_start;
+    for (size_t i = 0; i < level_data->width * level_data->height; i++) {
+      while (*ptr && !(*ptr >= '0' && *ptr <= '9')) ptr++;
+      if (*ptr == '\0') break;
+      int gid = atoi(ptr);
+      current_tilemap->tiles[i] = gid;
+      while (*ptr && (*ptr >= '0' && *ptr <= '9')) ptr++;
+    }
+  }
+
+  UnloadFileText(file_text);
 
   manager_get_global()->camera.target.x = level_data->width / 2.0 * TILE_SIZE;
   manager_get_global()->camera.target.y = level_data->height / 2.0 * TILE_SIZE;

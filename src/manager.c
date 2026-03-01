@@ -25,8 +25,8 @@ void manager_init() {
   global_manager = malloc(sizeof(struct manager));
   global_manager->game_should_run = true;
   global_manager->player = malloc(sizeof(struct player));
-  global_manager->player->pos.x = 4 * TILE_SIZE;
-  global_manager->player->pos.y = 4 * TILE_SIZE;
+  global_manager->player->pos.x = (float)(levels[0].player_spawn.x * TILE_SIZE);
+  global_manager->player->pos.y = (float)(levels[0].player_spawn.y * TILE_SIZE);
 
   global_manager->camera.offset.x = SCREEN_WIDTH / 2.0;
   global_manager->camera.offset.y = SCREEN_HEIGHT / 2.0;

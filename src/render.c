@@ -102,10 +102,6 @@ void render_ui() {
     DrawTextEx(mgr->font, TextFormat("Weapon: %s", weaponName),
                (Vector2){10, 40}, 24, 2, WHITE);
 
-    // Level info
-    DrawTextEx(mgr->font, TextFormat("Level: %d", mgr->current_level),
-               (Vector2){1050, 10}, 24, 2, LIGHTGRAY);
-
     // Hearts (lives)
     render_hearts();
   }
