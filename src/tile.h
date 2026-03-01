@@ -20,6 +20,7 @@ typedef enum {
   TILE_PLATFORM = 8,
   TILE_WALL = 9,
   TILE_RUBBLE = 10,
+  TILE_LABFLOOR = 11,
   TILE_COUNT
 } TileType;
 

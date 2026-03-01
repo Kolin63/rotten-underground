@@ -76,6 +76,7 @@ void manager_init() {
   global_manager->platform_tex = LoadTexture("assets/platform.png");
   global_manager->rubble_tex = LoadTexture("assets/rubble.png");
   global_manager->wall_tex = LoadTexture("assets/wall.png");
+  global_manager->labfloor_tex = LoadTexture("assets/labFloor.png");
   global_manager->coin_tex = LoadTexture("assets/coin.png");
   global_manager->heart_tex = LoadTexture("assets/heart.png");
   global_manager->halfheart_tex = LoadTexture("assets/halfHeart.png");
@@ -118,6 +119,7 @@ void manager_cleanup() {
   UnloadTexture(global_manager->platform_tex);
   UnloadTexture(global_manager->rubble_tex);
   UnloadTexture(global_manager->wall_tex);
+  UnloadTexture(global_manager->labfloor_tex);
   UnloadTexture(global_manager->coin_tex);
   UnloadTexture(global_manager->heart_tex);
   UnloadTexture(global_manager->halfheart_tex);
