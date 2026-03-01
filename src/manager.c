@@ -585,9 +585,9 @@ void manager_run_game() {
 
       if (CheckCollisionCircles(playerPos, 24.0f, enemyCenter, ENEMY_RADIUS)) {
         touching_enemy = true;
-        // Stage 1 (Type 0) = damage 1 (half-heart)
-        // Stage 2/3 (Type 1, 2) = damage 2 (full heart)
-        if (global_manager->enemies[i].type == 0) {
+        // Stage 1 (Type 1) = damage 1 (half-heart)
+        // Stage 2/3 (Type 2, 3) = damage 2 (full heart)
+        if (global_manager->enemies[i].type == 1) {
           enemy_damage = 1;
         } else {
           enemy_damage = 2;
@@ -603,31 +603,18 @@ void manager_run_game() {
         global_manager->player_invincibility_timer = 2.0f;
         global_manager->contact_timer = 0.0f;
         if (global_manager->lives <= 0) {
+          // Player death logic
           global_manager->lives = 0;
-          global_manager->game_should_run = false;
-          if (CheckCollisionCircles(playerPos, 10.0f, enemyCenter,
-                                    ENEMY_RADIUS)) {
-            global_manager->player_invincibility_timer = 2.0f;
-            if (global_manager->enemies[i].type == 1) {
-              global_manager->lives -= 1;
-            } else {
-              global_manager->lives -= 2;
-            }
-            if (global_manager->lives <= 0) {
-              // Player death logic
-              global_manager->lives = 0;
-              global_manager->current_level = 12;
-              tilemap_load_level(12);
-            }
-            break;
-          }
+          global_manager->current_level = 12;
+          tilemap_load_level(12);
         }
-      } else {
-        global_manager->contact_timer = 0.0f;
       }
-
-      render_game();
+    } else {
+      global_manager->contact_timer = 0.0f;
     }
-  }
 
-  struct manager* manager_get_global() { return global_manager; }
+    render_game();
+  }
+}
+
+struct manager* manager_get_global() { return global_manager; }
