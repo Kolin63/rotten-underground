@@ -15,32 +15,18 @@ void enemies_init(struct enemy enemies[MAX_ENEMIES]) {
   }
 }
 
-void enemies_spawn(struct enemy enemies[MAX_ENEMIES]) {
-  return;
-  for (int i = 0; i < MAX_ENEMIES; i++) {
-    if (!enemies[i].active) {
-      int attempts = 0;
-      while (attempts < 100) {
-        int tx = rand() % MAP_WIDTH;
-        int ty = rand() % MAP_HEIGHT;
-
-        if (tx == 4 && ty == 2) {
-          attempts++;
-          continue;
-        }
-
-        if (isWalkable(tx, ty)) {
-          enemies[i].pos.x = (float)(tx * TILE_SIZE);
-          enemies[i].pos.y = (float)(ty * TILE_SIZE);
-          enemies[i].active = true;
-          enemies[i].anim_timer = 0;
-          enemies[i].frame = rand() % 7;  // Random start frame
-          enemies[i].rotation = 0;
-          break;
-        }
-        attempts++;
-      }
-    }
+void enemies_spawn(struct enemy enemies[MAX_ENEMIES],
+                   const struct rat_spawn rat_spawns[32]) {
+  int enemy_idx = 0;
+  for (int i = 0; i < 32 && enemy_idx < MAX_ENEMIES; i++) {
+    if (rat_spawns[i].rat_type == 0) continue;
+    enemies[enemy_idx].pos.x = (float)(rat_spawns[i].pos.x * TILE_SIZE);
+    enemies[enemy_idx].pos.y = (float)(rat_spawns[i].pos.y * TILE_SIZE);
+    enemies[enemy_idx].active = true;
+    enemies[enemy_idx].anim_timer = 0;
+    enemies[enemy_idx].frame = i % 7;
+    enemies[enemy_idx].rotation = 0;
+    enemy_idx++;
   }
 }
 

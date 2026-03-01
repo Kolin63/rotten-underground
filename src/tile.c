@@ -7,6 +7,7 @@
 #include "tilemaps.h"
 
 static struct tilemap* current_tilemap;
+static const struct level* current_level;
 
 void tilemap_init() {
   current_tilemap = malloc(sizeof(struct tilemap));
@@ -17,6 +18,7 @@ void tilemap_init() {
 
 void tilemap_load_level(int level) {
   const struct level* level_data = &levels[level];
+  current_level = level_data;
   current_tilemap->width = level_data->width;
   current_tilemap->height = level_data->height;
   current_tilemap->tiles =
@@ -71,6 +73,8 @@ void tilemap_draw() {
 }
 
 struct tilemap* tilemap_get_current() { return current_tilemap; }
+
+const struct level* tilemap_get_current_level() { return current_level; }
 
 bool isWalkable(size_t tile_x, size_t tile_y) {
   if (tile_x >= current_tilemap->width || tile_y >= current_tilemap->height) {
