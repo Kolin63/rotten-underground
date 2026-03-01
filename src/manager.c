@@ -249,9 +249,10 @@ void manager_run_game() {
     } else if (global_manager->current_level == 2) {
       if (global_manager->intro_step == 0) {
         global_manager->intro_step = 1;
-        static const char* crowbar[] = {"To use your crowbar, left click."};
+        static const char* crowbar[] = {"To use your crowbar, left click.",
+                                        "Kill the rat before continuing!"};
         dialog_show(global_manager->dialog, "Graywater Subway PA System",
-                    crowbar, 1);
+                    crowbar, 2);
       } else if (global_manager->intro_step == 1 &&
                  !global_manager->dialog->active) {
         // Check if all enemies are dead for post-kill dialogue
