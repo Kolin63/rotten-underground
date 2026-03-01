@@ -65,6 +65,9 @@ void tilemap_draw() {
       case TILE_PLATFORM:
         tex = mgr->platform_tex;
         break;
+      case TILE_WALL:
+        tex = mgr->wall_tex;
+        break;
       default:
         tex = mgr->gravel_tex;
         break;
