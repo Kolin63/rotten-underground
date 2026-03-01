@@ -1,0 +1,1 @@
+﻿gcc  -std=c23 -Wall -Wextra -Wpedantic -MMD -MP -o game build/bullet.o build/controller.o build/dialog.o build/enemy.o build/main.o build/manager.o build/render.o build/tile.o -lraylib -lgdi32 -lwinmm

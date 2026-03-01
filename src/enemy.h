@@ -11,6 +11,8 @@
 struct enemy {
   struct pos_float pos;
   bool active;
+  int type;  // 0: Rat1, 1: Rat2, 2: Rat3, 3: Boss
+  int health;
   float anim_timer;
   int frame;
   float rotation;
