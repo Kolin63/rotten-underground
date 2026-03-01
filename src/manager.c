@@ -564,8 +564,8 @@ void manager_run_game() {
           if (global_manager->lives <= 0) {
             // Player death logic
             global_manager->lives = 0;
-            global_manager->game_should_run =
-                false;  // Could restart level here instead
+            global_manager->current_level = 12;
+            tilemap_load_level(12);
           }
           break;
         }

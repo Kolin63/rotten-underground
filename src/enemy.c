@@ -33,7 +33,7 @@ void enemies_spawn(struct enemy enemies[MAX_ENEMIES],
 
 void enemies_update(struct enemy enemies[MAX_ENEMIES], Vector2 playerPos,
                     float dt, bool paused) {
-  if (paused || manager_get_global()->current_level == 11) return;
+  if (paused || manager_get_global()->current_level >= 11) return;
 
   float speed = 60.0f;
 
