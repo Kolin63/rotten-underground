@@ -16,6 +16,7 @@ struct manager {
   Texture2D rat_anim[7];
   Texture2D gravel_tex;
   Texture2D track_left_tex;
+  Texture2D track_middle_tex;
   Texture2D track_right_tex;
   Texture2D platform_tex;
   Sound death_snd;

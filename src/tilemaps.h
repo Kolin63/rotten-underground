@@ -26,7 +26,7 @@ struct level {
 static const struct level levels[LEVELS_AMOUNT] = {
   // level 0
   {
-    20, 30,
+    30, 20,
     {0, 0}, // player spawn
     // rat spawns
     {},

@@ -18,13 +18,13 @@ void tilemap_init() {
 void tilemap_load_level(int level) {
   const struct level* level_data = &levels[level];
   current_tilemap->width = level_data->width;
-  current_tilemap->height = current_tilemap->height;
+  current_tilemap->height = level_data->height;
   current_tilemap->tiles =
-      realloc(current_tilemap->tiles, level_data->width * level_data->height);
+      realloc(current_tilemap->tiles, level_data->width * level_data->height * sizeof(TileType));
   const char* tilestr = level_data->tilemap;
   for (size_t i = 0; i < strlen(tilestr); i++) {
     char c = tilestr[i];
-    int tile_id = c - '0';  // convert char to int
+    int tile_id = (c - '0') - 1;  // convert Tiled GID to local tile ID (firstgid=1)
     current_tilemap->tiles[i] = tile_id;
   }
 }
@@ -45,6 +45,9 @@ void tilemap_draw() {
         break;
       case TILE_TRACK_LEFT:
         tex = mgr->track_left_tex;
+        break;
+      case TILE_TRACK_MIDDLE:
+        tex = mgr->track_middle_tex;
         break;
       case TILE_TRACK_RIGHT:
         tex = mgr->track_right_tex;

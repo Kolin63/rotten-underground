@@ -22,6 +22,9 @@ void render_game() {
   render_bullets();
   render_enemies();
   render_player();
+
+  EndMode2D();
+
   render_dialog();
 
   EndDrawing();

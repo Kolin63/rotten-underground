@@ -8,7 +8,7 @@
 #define TILE_SIZE 32
 
 #define MAP_WIDTH tilemap_get_current()->width
-#define MAP_HEIGHT tilemap_get_current()->width
+#define MAP_HEIGHT tilemap_get_current()->height
 
 typedef enum {
   TILE_GRAVEL = 2,
