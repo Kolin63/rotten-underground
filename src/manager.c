@@ -45,7 +45,6 @@ void manager_cleanup() {
   CloseWindow();
   UnloadFont(global_manager->font);
   free(global_manager->dialog);
-  free(global_manager->tilemap);
   free(global_manager->player);
   free(global_manager);
 }

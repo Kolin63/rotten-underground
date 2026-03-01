@@ -1,0 +1,18 @@
+{ "object":
+    {
+     "height":128,
+     "id":20,
+     "name":"",
+     "properties":[
+            {
+             "name":"to_level",
+             "type":"string",
+             "value":"name"
+            }],
+     "rotation":0,
+     "type":"",
+     "visible":true,
+     "width":8
+    },
+ "type":"template"
+}

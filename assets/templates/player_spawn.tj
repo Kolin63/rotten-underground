@@ -1,0 +1,19 @@
+{ "object":
+    {
+     "height":0,
+     "id":14,
+     "name":"",
+     "point":true,
+     "properties":[
+            {
+             "name":"from_level",
+             "type":"string",
+             "value":"name"
+            }],
+     "rotation":0,
+     "type":"player_spawn",
+     "visible":true,
+     "width":0
+    },
+ "type":"template"
+}
