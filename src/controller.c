@@ -112,7 +112,6 @@ void controller_tick() {
       if (Vector2Distance(playerCenter, mgr->money_items[i].pos) < 32.0f) {
         mgr->money += 10;
         mgr->money_items[i].active = false;
-        // "don't mind if I do..." voiceline
         return;
       }
     }

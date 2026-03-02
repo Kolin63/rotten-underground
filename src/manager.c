@@ -544,6 +544,8 @@ void manager_run_game() {
           40.0f) {
         global_manager->money += 10;
         global_manager->money_items[i].active = false;
+        static const char* pickup_lines[] = {"Don't mind if I do..."};
+        dialog_show(global_manager->dialog, "Johnny", pickup_lines, 1);
       }
     }
 
