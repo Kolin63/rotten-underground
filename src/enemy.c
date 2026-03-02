@@ -2,7 +2,6 @@
 
 #include <math.h>
 #include <raymath.h>
-#include <stdlib.h>
 
 #include "manager.h"
 #include "tile.h"
