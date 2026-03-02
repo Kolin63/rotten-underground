@@ -31,6 +31,7 @@ struct manager {
   Texture2D rubble_tex;
   Texture2D wall_tex;
   Texture2D labfloor_tex;
+  Texture2D goofloor_tex;
   Texture2D coin_tex;
   Texture2D moneyicon_tex;
   Texture2D heart_tex;

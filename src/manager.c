@@ -84,6 +84,7 @@ void manager_init() {
   global_manager->rubble_tex = LoadTexture("assets/rubble.png");
   global_manager->wall_tex = LoadTexture("assets/wall.png");
   global_manager->labfloor_tex = LoadTexture("assets/labFloor.png");
+  global_manager->goofloor_tex = LoadTexture("assets/gooOnLabFloor.png");
   global_manager->coin_tex = LoadTexture("assets/coin.png");
   global_manager->moneyicon_tex = LoadTexture("assets/moneyIcon.png");
   global_manager->heart_tex = LoadTexture("assets/heart.png");
@@ -133,6 +134,7 @@ void manager_cleanup() {
   UnloadTexture(global_manager->rubble_tex);
   UnloadTexture(global_manager->wall_tex);
   UnloadTexture(global_manager->labfloor_tex);
+  UnloadTexture(global_manager->goofloor_tex);
   UnloadTexture(global_manager->coin_tex);
   UnloadTexture(global_manager->moneyicon_tex);
   UnloadTexture(global_manager->heart_tex);
