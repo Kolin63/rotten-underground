@@ -68,18 +68,30 @@ void render_enemies() {
   for (int i = 0; i < MAX_ENEMIES; i++) {
     if (mgr->enemies[i].active) {
       Texture2D tex = mgr->rat_anim[mgr->enemies[i].frame];
-      Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
 
       float scale = 1.0f;
-      if (mgr->enemies[i].type == 2) scale = 1.6f;
-      if (mgr->enemies[i].type == 3) scale = 2.2f;
+      float width = 32.0f;
+      float height = width;
+      float offset = 16.0f;
 
-      float dim = 32.0f * scale;
-      float offset = 16.0f * scale;
+      if (mgr->enemies[i].type == 2) {
+        tex = mgr->rat2_anim[mgr->enemies[i].frame % 2];
+        width *= 2;
+      }
+      if (mgr->enemies[i].type == 3) {
+        tex = mgr->rat2_anim[mgr->enemies[i].frame % 2];
+        width *= 2;
+        scale = 2.2f;
+      }
+
+      width *= scale;
+      height *= scale;
+
+      Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
 
       // Dest rect centered on pos
       Rectangle dest = {(float)mgr->enemies[i].pos.x + 16,
-                        (float)mgr->enemies[i].pos.y + 16, dim, dim};
+                        (float)mgr->enemies[i].pos.y + 16, width, height};
       Vector2 origin = {offset, offset};
       DrawTexturePro(tex, source, dest, origin, mgr->enemies[i].rotation,
                      WHITE);

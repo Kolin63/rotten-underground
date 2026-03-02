@@ -74,6 +74,8 @@ void manager_init() {
     sprintf(path, "assets/ratStage1/1rat_%d.png", i + 1);
     global_manager->rat_anim[i] = LoadTexture(path);
   }
+  global_manager->rat2_anim[0] = LoadTexture("assets/ratStage2/2rat_1.png");
+  global_manager->rat2_anim[1] = LoadTexture("assets/ratStage2/2rat_2.png");
   global_manager->gravel_tex = LoadTexture("assets/gravel.png");
   global_manager->track_left_tex = LoadTexture("assets/trackLeft.png");
   global_manager->track_middle_tex = LoadTexture("assets/trackMiddle.png");
@@ -121,6 +123,8 @@ void manager_cleanup() {
   for (int i = 0; i < 7; i++) {
     UnloadTexture(global_manager->rat_anim[i]);
   }
+  UnloadTexture(global_manager->rat2_anim[0]);
+  UnloadTexture(global_manager->rat2_anim[1]);
   UnloadTexture(global_manager->gravel_tex);
   UnloadTexture(global_manager->track_left_tex);
   UnloadTexture(global_manager->track_middle_tex);
@@ -450,9 +454,9 @@ void manager_run_game() {
               "us to rise!"};
           dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 2);
 
-          // this is to summon 10 rats after he says that line
+          // this is to summon 5 rats after he says that line
           int rats_summoned = 0;
-          for (int i = 0; i < MAX_ENEMIES && rats_summoned < 10; i++) {
+          for (int i = 0; i < MAX_ENEMIES && rats_summoned < 5; i++) {
             struct enemy* elem = &global_manager->enemies[i];
             if (elem->active == true) continue;
 
@@ -461,7 +465,7 @@ void manager_run_game() {
             elem->pos.y = 4 * TILE_SIZE;
             elem->active = true;
             elem->health = 1;
-            elem->type = 0;
+            elem->type = 2;
           }
         } else if (global_manager->boss_hp < 200 &&
                    global_manager->boss_stage == 1) {
