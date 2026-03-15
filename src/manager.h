@@ -22,6 +22,7 @@ struct manager {
   Camera2D camera;
   Texture2D player_tex;
   Texture2D rat_anim[7];
+  Texture2D rat2_anim[2];
   Texture2D gravel_tex;
   Texture2D track_left_tex;
   Texture2D track_middle_tex;
@@ -36,6 +37,9 @@ struct manager {
   Texture2D halfheart_tex;
   Texture2D boss_tex[3];
   Texture2D boss_head_knocked_tex;
+  Texture2D bullet_tex;
+  Texture2D goo_tex;
+  Texture2D goolabfloor_tex;
   Texture2D npc_tex[4];
 
   int current_level;

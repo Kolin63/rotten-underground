@@ -41,12 +41,23 @@ void render_game() {
   EndDrawing();
 }
 
-void render_tiles() { tilemap_draw(); }
+void render_tiles() {
+  tilemap_draw();
+  struct manager* mgr = manager_get_global();
+  if (mgr->current_level == 10) {
+    DrawTextureV(mgr->goolabfloor_tex, (Vector2){17 * TILE_SIZE, 10 * TILE_SIZE}, WHITE);
+    DrawTextureV(mgr->goo_tex, (Vector2){20 * TILE_SIZE, 9 * TILE_SIZE}, WHITE);
+  }
+}
 
 void render_bullets() {
   struct manager* mgr = manager_get_global();
   for (int i = 0; i < MAX_BULLETS; i++) {
-    bullet_draw(&mgr->bullets[i]);
+    if (mgr->bullets[i].active) {
+      Vector2 p = {mgr->bullets[i].pos.x - mgr->bullet_tex.width / 2.0f,
+                   mgr->bullets[i].pos.y - mgr->bullet_tex.height / 2.0f};
+      DrawTextureV(mgr->bullet_tex, p, WHITE);
+    }
   }
 }
 
@@ -67,7 +78,12 @@ void render_enemies() {
   struct manager* mgr = manager_get_global();
   for (int i = 0; i < MAX_ENEMIES; i++) {
     if (mgr->enemies[i].active) {
-      Texture2D tex = mgr->rat_anim[mgr->enemies[i].frame];
+      Texture2D tex;
+      if (mgr->enemies[i].type == 2 || mgr->enemies[i].type == 3) {
+        tex = mgr->rat2_anim[mgr->enemies[i].frame % 2];
+      } else {
+        tex = mgr->rat_anim[mgr->enemies[i].frame % 7];
+      }
       Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
 
       float scale = 1.0f;
@@ -87,12 +103,15 @@ void render_enemies() {
   }
 
   if (mgr->current_level == 10) {
-    int boss_stage;
-    if (mgr->boss_hp <= 300) boss_stage = 0;
-    if (mgr->boss_hp <= 150) boss_stage = 1;
-    if (mgr->boss_hp <= 0) boss_stage = 2;
-
-    Texture2D tex = mgr->boss_tex[boss_stage];
+    Texture2D tex;
+    if (mgr->boss_stage >= 4) {
+      tex = mgr->boss_head_knocked_tex;
+    } else {
+      int idx = mgr->boss_stage - 1;
+      if (idx < 0) idx = 0;
+      if (idx > 2) idx = 2;
+      tex = mgr->boss_tex[idx];
+    }
     Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
     Rectangle dest = {18 * TILE_SIZE, 9 * TILE_SIZE, 128, 128};
     Vector2 origin = {16, 16};
