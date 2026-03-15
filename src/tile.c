@@ -1,6 +1,5 @@
 #include "tile.h"
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,6 +93,9 @@ void tilemap_draw() {
         break;
       case TILE_LABFLOOR:
         tex = mgr->labfloor_tex;
+        break;
+      case TILE_GOOFLOOR:
+        tex = mgr->goofloor_tex;
         break;
       default:
         tex = mgr->gravel_tex;

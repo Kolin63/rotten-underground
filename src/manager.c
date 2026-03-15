@@ -74,11 +74,8 @@ void manager_init() {
     sprintf(path, "assets/ratStage1/1rat_%d.png", i + 1);
     global_manager->rat_anim[i] = LoadTexture(path);
   }
-  for (int i = 0; i < 2; i++) {
-    char path[64];
-    sprintf(path, "assets/ratStage2/1_rat%d.png", i + 1);
-    global_manager->rat2_anim[i] = LoadTexture(path);
-  }
+  global_manager->rat2_anim[0] = LoadTexture("assets/ratStage2/2rat_1.png");
+  global_manager->rat2_anim[1] = LoadTexture("assets/ratStage2/2rat_2.png");
   global_manager->gravel_tex = LoadTexture("assets/gravel.png");
   global_manager->track_left_tex = LoadTexture("assets/trackLeft.png");
   global_manager->track_middle_tex = LoadTexture("assets/trackMiddle.png");
@@ -87,6 +84,7 @@ void manager_init() {
   global_manager->rubble_tex = LoadTexture("assets/rubble.png");
   global_manager->wall_tex = LoadTexture("assets/wall.png");
   global_manager->labfloor_tex = LoadTexture("assets/labFloor.png");
+  global_manager->goofloor_tex = LoadTexture("assets/gooOnLabFloor.png");
   global_manager->coin_tex = LoadTexture("assets/coin.png");
   global_manager->moneyicon_tex = LoadTexture("assets/moneyIcon.png");
   global_manager->heart_tex = LoadTexture("assets/heart.png");
@@ -129,9 +127,8 @@ void manager_cleanup() {
   for (int i = 0; i < 7; i++) {
     UnloadTexture(global_manager->rat_anim[i]);
   }
-  for (int i = 0; i < 2; i++) {
-    UnloadTexture(global_manager->rat2_anim[i]);
-  }
+  UnloadTexture(global_manager->rat2_anim[0]);
+  UnloadTexture(global_manager->rat2_anim[1]);
   UnloadTexture(global_manager->gravel_tex);
   UnloadTexture(global_manager->track_left_tex);
   UnloadTexture(global_manager->track_middle_tex);
@@ -140,6 +137,7 @@ void manager_cleanup() {
   UnloadTexture(global_manager->rubble_tex);
   UnloadTexture(global_manager->wall_tex);
   UnloadTexture(global_manager->labfloor_tex);
+  UnloadTexture(global_manager->goofloor_tex);
   UnloadTexture(global_manager->coin_tex);
   UnloadTexture(global_manager->moneyicon_tex);
   UnloadTexture(global_manager->heart_tex);

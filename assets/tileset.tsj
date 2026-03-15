@@ -8,7 +8,7 @@
  "margin":0,
  "name":"rotten-underground",
  "spacing":0,
- "tilecount":8,
+ "tilecount":9,
  "tiledversion":"1.11.2",
  "tileheight":16,
  "tiles":[
@@ -57,6 +57,12 @@
         {
          "id":11,
          "image":"labFloor.png",
+         "imageheight":16,
+         "imagewidth":16
+        }, 
+        {
+         "id":12,
+         "image":"gooOnLabFloor.png",
          "imageheight":16,
          "imagewidth":16
         }],
