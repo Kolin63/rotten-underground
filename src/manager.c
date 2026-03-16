@@ -107,6 +107,7 @@ void manager_init() {
   global_manager->death_snd = LoadSound("assets/death.mp3");
   global_manager->bgm =
       LoadMusicStream("assets/audio/nullnel-mossy-sewer-169049.mp3");
+  global_manager->title_ambience = LoadSound("assets/audio/SubwayNoise.mp3");
   PlayMusicStream(global_manager->bgm);
 
   global_manager->game_should_run = true;
@@ -155,6 +156,7 @@ void manager_cleanup() {
   }
   UnloadSound(global_manager->death_snd);
   UnloadMusicStream(global_manager->bgm);
+  UnloadSound(global_manager->title_ambience);
   UnloadFont(global_manager->font);
   CloseAudioDevice();
   CloseWindow();
@@ -223,6 +225,7 @@ static void update_level_script(float dt) {
                                        "I guess there's only one way left."};
         dialog_show(global_manager->dialog, "Johnny", sealed, 2);
       } else if (global_manager->intro_step == 3) {
+        PlaySound(global_manager->title_ambience);
         if (!global_manager->dialog->active) {
           global_manager->intro_step = 4;
           global_manager->intro_timer = 2.5f;

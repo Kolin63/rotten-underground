@@ -65,6 +65,7 @@ struct manager {
 
   Sound death_snd;
   Music bgm;
+  Sound title_ambience;
   struct bullet bullets[MAX_BULLETS];
   struct enemy enemies[MAX_ENEMIES];
   struct money_item money_items[MAX_MONEY];
