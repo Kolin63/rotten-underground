@@ -112,12 +112,15 @@ static void handle_attacks(struct manager* mgr, struct player* p) {
       float len = (float)sqrt(dx * dx + dy * dy);
 
       if (len > 0) {
-        mgr->gun_cooldown = 0.15f;
-        Vector2 dir = (Vector2){dx / len, dy / len};
-        for (int i = 0; i < MAX_BULLETS; i++) {
-          if (!mgr->bullets[i].active) {
-            bullet_fire(&mgr->bullets[i], playerCenter, dir);
-            break;
+        if (mgr->ammo > 0) {
+          mgr->ammo--;
+          mgr->gun_cooldown = 0.15f;
+          Vector2 dir = (Vector2){dx / len, dy / len};
+          for (int i = 0; i < MAX_BULLETS; i++) {
+            if (!mgr->bullets[i].active) {
+              bullet_fire(&mgr->bullets[i], playerCenter, dir);
+              break;
+            }
           }
         }
       }
@@ -146,6 +149,50 @@ void controller_tick() {
       dialog_advance(mgr->dialog);
     }
     return;
+  }
+
+  // Shop Toggle
+  if (mgr->current_level > 0 && !mgr->dialog->active && mgr->current_level != 11 && mgr->current_level != 12) {
+    if (IsKeyPressed(KEY_TAB)) {
+      mgr->shop_active = !mgr->shop_active;
+    }
+  }
+
+  if (mgr->shop_active) {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+      Vector2 mp = GetMousePosition();
+      if (mgr->has_gun) {
+        // Ammo Button: {320, 230, 320, 60}
+        if (CheckCollisionPointRec(mp, (Rectangle){320, 230, 320, 60})) {
+          if (mgr->money >= 10) {
+            mgr->money -= 10;
+            mgr->ammo += 10;
+          }
+        }
+        // Health Button: {320, 310, 320, 60}
+        if (CheckCollisionPointRec(mp, (Rectangle){320, 310, 320, 60})) {
+          if (mgr->lives < 6 && mgr->money >= 20) {
+            mgr->money -= 20;
+            mgr->lives += 2;
+            if (mgr->lives > 6) mgr->lives = 6;
+          }
+        }
+      } else {
+        // Health Button: {320, 230, 320, 60}
+        if (CheckCollisionPointRec(mp, (Rectangle){320, 230, 320, 60})) {
+          if (mgr->lives < 6 && mgr->money >= 20) {
+            mgr->money -= 20;
+            mgr->lives += 2;
+            if (mgr->lives > 6) mgr->lives = 6;
+          }
+        }
+      }
+      // Close Button: {400, 410, 160, 50}
+      if (CheckCollisionPointRec(mp, (Rectangle){400, 410, 160, 50})) {
+        mgr->shop_active = false;
+      }
+    }
+    return; // Block movement/attacks while shop is open
   }
 
   struct player* p = mgr->player;

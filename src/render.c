@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "dialog.h"
 #include "manager.h"
@@ -17,6 +18,7 @@ void render_ui();
 void render_hearts();
 void render_npcs();
 void render_end_credits();
+void render_shop_popup();
 
 void render_game() {
   BeginDrawing();
@@ -37,6 +39,9 @@ void render_game() {
 
   render_dialog();
   render_ui();
+  if (manager_get_global()->shop_active) {
+    render_shop_popup();
+  }
 
   EndDrawing();
 }
@@ -54,9 +59,15 @@ void render_bullets() {
   struct manager* mgr = manager_get_global();
   for (int i = 0; i < MAX_BULLETS; i++) {
     if (mgr->bullets[i].active) {
-      Vector2 p = {mgr->bullets[i].pos.x - mgr->bullet_tex.width / 2.0f,
-                   mgr->bullets[i].pos.y - mgr->bullet_tex.height / 2.0f};
-      DrawTextureV(mgr->bullet_tex, p, WHITE);
+      float dx = mgr->bullets[i].velocity.x;
+      float dy = mgr->bullets[i].velocity.y;
+      float rot = atan2f(dy, dx) * RAD2DEG;
+      float width = (float)mgr->bullet_tex.width;
+      float height = (float)mgr->bullet_tex.height;
+      Rectangle source = {0.0f, 0.0f, width, height};
+      Rectangle dest = {mgr->bullets[i].pos.x, mgr->bullets[i].pos.y, width, height};
+      Vector2 origin = {width / 2.0f, height / 2.0f};
+      DrawTexturePro(mgr->bullet_tex, source, dest, origin, rot, WHITE);
     }
   }
 }
@@ -223,9 +234,17 @@ void render_ui() {
     DrawTextEx(mgr->font, moneyStr, (Vector2){38, 10}, 24, 2, YELLOW);
 
     // Weapon
-    const char* weaponName = (mgr->active_weapon == 0) ? "Crowbar" : "Gun";
+    const char* weaponName = (mgr->active_weapon == 0) ? "Crowbar" : TextFormat("Gun (Ammo: %d)", mgr->ammo);
     DrawTextEx(mgr->font, TextFormat("Weapon: %s", weaponName),
                (Vector2){10, 40}, 24, 2, WHITE);
+
+    if (mgr->has_gun) {
+        DrawTextEx(mgr->font, "[TAB] Shop",
+                   (Vector2){10, 70}, 20, 2, WHITE);
+    } else {
+        DrawTextEx(mgr->font, "[TAB] Shop",
+                   (Vector2){10, 70}, 20, 2, WHITE);
+    }
 
     // Hearts (lives)
     render_hearts();
@@ -245,4 +264,36 @@ void render_hearts() {
       DrawTextureV(mgr->heart_tex, pos, (Color){100, 100, 100, 100});
     }
   }
+}
+
+void render_shop_popup() {
+  struct manager* mgr = manager_get_global();
+
+  DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), (Color){0, 0, 0, 200});
+
+  DrawRectangle(280, 140, 400, 360, DARKGRAY);
+  DrawRectangleLines(280, 140, 400, 360, LIGHTGRAY);
+
+  Vector2 titleSize = MeasureTextEx(mgr->font, "MARKET", 40, 2);
+  DrawTextEx(mgr->font, "MARKET", (Vector2){480 - titleSize.x / 2.0f, 160}, 40, 2, WHITE);
+
+  if (mgr->has_gun) {
+    Color bgAmmo = (mgr->money >= 10) ? LIGHTGRAY : GRAY;
+    Color textAmmo = (mgr->money >= 10) ? BLACK : DARKGRAY;
+    DrawRectangle(320, 230, 320, 60, bgAmmo);
+    DrawTextEx(mgr->font, "+10 Ammo (10 Coins)", (Vector2){345, 245}, 24, 2, textAmmo);
+
+    Color bgHealth = (mgr->lives < 6 && mgr->money >= 20) ? LIGHTGRAY : GRAY;
+    Color textHealth = (mgr->lives < 6 && mgr->money >= 20) ? BLACK : DARKGRAY;
+    DrawRectangle(320, 310, 320, 60, bgHealth);
+    DrawTextEx(mgr->font, "+1 Heart (20 Coins)", (Vector2){345, 325}, 24, 2, textHealth);
+  } else {
+    Color bgHealth = (mgr->lives < 6 && mgr->money >= 20) ? LIGHTGRAY : GRAY;
+    Color textHealth = (mgr->lives < 6 && mgr->money >= 20) ? BLACK : DARKGRAY;
+    DrawRectangle(320, 230, 320, 60, bgHealth);
+    DrawTextEx(mgr->font, "+1 Heart (20 Coins)", (Vector2){345, 245}, 24, 2, textHealth);
+  }
+
+  DrawRectangle(400, 410, 160, 50, RED);
+  DrawTextEx(mgr->font, "Close", (Vector2){440, 421}, 24, 2, WHITE);
 }

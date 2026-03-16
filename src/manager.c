@@ -42,6 +42,7 @@ void manager_init() {
   global_manager->title_alpha = 0.0f;
   global_manager->money = 0;
   global_manager->lives = 6;
+  global_manager->ammo = 30;
   global_manager->has_gun = false;
   global_manager->active_weapon = 0;
   global_manager->crowbar_cooldown = 0.0f;
@@ -170,6 +171,7 @@ static void update_level_script(float dt) {
         global_manager->intro_step = 1;
         global_manager->intro_timer = 2.4f;
         static const char* bite[] = {"Agh! These pesky rats...."};
+        global_manager->player->facing_right = true;
         dialog_show(global_manager->dialog, "Johnny", bite, 1);
       } else if (global_manager->intro_step == 1) {
         if (global_manager->intro_timer > 0) {
@@ -201,6 +203,7 @@ static void update_level_script(float dt) {
             }
             // Deactivate rat
             global_manager->enemies[0].active = false;
+            global_manager->player->facing_right = false;
             static const char* collapse[] = {"Holy- What just happened?!"};
             dialog_show(global_manager->dialog, "Johnny", collapse, 1);
           }
@@ -224,11 +227,13 @@ static void update_level_script(float dt) {
           global_manager->intro_step = 4;
           global_manager->intro_timer = 2.5f;
           global_manager->title_alpha = 0.0f;
+          global_manager->player->facing_right = true;
         }
       } else if (global_manager->intro_step == 4) {
         if (global_manager->intro_timer > 0) {
           global_manager->intro_timer -= dt;
           global_manager->title_alpha += dt / 1.0f;
+          global_manager->player->pos.x += 200 * dt;
           if (global_manager->title_alpha > 1.0f)
             global_manager->title_alpha = 1.0f;
         } else {
@@ -331,10 +336,8 @@ static void update_level_script(float dt) {
       }
       if (!rats_alive && !global_manager->dialog->active) {
         global_manager->intro_step = 3;
-        static const char* l4c[] = {
-            "Oh my god! Thank you so much!",
-            "Quick tip, you can swap between your weapons with right click."};
-        dialog_show(global_manager->dialog, "Helpless Person", l4c, 2);
+        static const char* l4c[] = {"Oh my god! Thank you so much!"};
+        dialog_show(global_manager->dialog, "Helpless Person", l4c, 1);
       }
     }
   } else if (global_manager->current_level == 5) {
@@ -418,61 +421,62 @@ static void update_level_script(float dt) {
       dialog_show(global_manager->dialog, "Crazy Guy", l9, 2);
     }
   } else if (global_manager->current_level == 10) {
-      if (!global_manager->boss_active) {
-        global_manager->boss_active = true;
-        global_manager->boss_hp = 300;
-        global_manager->boss_stage = 1;
-        static const char* bossIntro[] = {"Who goes there?!",
-                                          "You shall not pass Graywater!"};
-        dialog_show(global_manager->dialog, "The Rat King", bossIntro, 2);
-      } else {
-        // Boss death logic
-        if (global_manager->dialog->active == false &&
-            global_manager->boss_stage == 4) {
-          global_manager->current_level = 11;
-          tilemap_load_level(11);
-        } else if (global_manager->boss_hp <= 0 &&
-                   global_manager->boss_stage == 3) {
-          global_manager->boss_stage = 4;
-          static const char* bossDead[] = {
-              "Is that Jeff, my roommate?",
-              "Well, there's no way I'm getting paid for overtime..."};
-          dialog_show(global_manager->dialog, "Johnny", bossDead, 2);
-          // Game win logic?
-        } else if (global_manager->boss_hp < 100 &&
-                   global_manager->boss_stage == 2) {
-          global_manager->boss_stage = 3;
+    if (!global_manager->boss_active) {
+      global_manager->boss_active = true;
+      global_manager->boss_hp = 300;
+      global_manager->boss_stage = 1;
+      static const char* bossIntro[] = {"Who goes there?!",
+                                        "You shall not pass Graywater!"};
+      dialog_show(global_manager->dialog, "The Rat King", bossIntro, 2);
+    } else {
+      // Boss death logic
+      if (global_manager->dialog->active == false &&
+          global_manager->boss_stage == 4) {
+        global_manager->current_level = 11;
+        tilemap_load_level(11);
+      } else if (global_manager->boss_hp <= 0 &&
+                 global_manager->boss_stage == 3) {
+        global_manager->boss_stage = 4;
+        static const char* bossDead[] = {
+            "Is that Jeff, my roommate?",
+            "Well, there's no way I'm getting paid for overtime..."};
+        dialog_show(global_manager->dialog, "Johnny", bossDead, 2);
+        // Game win logic?
+      } else if (global_manager->boss_hp < 100 &&
+                 global_manager->boss_stage == 2) {
+        global_manager->boss_stage = 3;
 
-          static const char* stage3_rat[] = {
-              "It's not green goo, it's a specially formulated growth serum.",
-              "My kind has been pushed around for long enough, it's time for "
-              "us to rise!"};
-          dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 2);
+        static const char* stage3_rat[] = {
+            "It's not green goo, it's a specially formulated growth serum.",
+            "My kind has been pushed around for long enough, it's time for "
+            "us to rise!"};
+        dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 2);
 
-          // this is to summon 5 rats after he says that line
-          int rats_summoned = 0;
-          for (int i = 0; i < MAX_ENEMIES && rats_summoned < 5; i++) {
-            struct enemy* elem = &global_manager->enemies[i];
-            if (elem->active == true) continue;
+        // this is to summon 5 rats after he says that line
+        int rats_summoned = 0;
+        for (int i = 0; i < MAX_ENEMIES && rats_summoned < 5; i++) {
+          struct enemy* elem = &global_manager->enemies[i];
+          if (elem->active == true) continue;
 
-            rats_summoned++;
-            elem->pos.x = (3 + rats_summoned * 1.25) * TILE_SIZE;
-            elem->pos.y = 4 * TILE_SIZE;
-            elem->active = true;
-            elem->health = 1;
-            elem->type = 2;
-          }
-        } else if (global_manager->boss_hp < 200 &&
-                   global_manager->boss_stage == 1) {
-          global_manager->boss_stage = 2;
-          static const char* stage2_player[] = {"What's the green goo?"};
-          dialog_show(global_manager->dialog, "Johnny", stage2_player, 1);
+          rats_summoned++;
+          elem->pos.x = (3 + rats_summoned * 1.25) * TILE_SIZE;
+          elem->pos.y = 4 * TILE_SIZE;
+          elem->active = true;
+          elem->health = 1;
+          elem->type = 2;
         }
+      } else if (global_manager->boss_hp < 200 &&
+                 global_manager->boss_stage == 1) {
+        global_manager->boss_stage = 2;
+        static const char* stage2_player[] = {"What's the green goo?"};
+        dialog_show(global_manager->dialog, "Johnny", stage2_player, 1);
+      }
     }
   }
 }
 
 static void check_level_transition() {
+  if (global_manager->shop_active) return;
   if (global_manager->current_level == 10) return;
   if (global_manager->player->pos.x > (MAP_WIDTH * TILE_SIZE) - 70) {
     // Check if all enemies are defeated
@@ -529,6 +533,7 @@ static void check_level_transition() {
 }
 
 static void update_collisions_and_entities(float dt) {
+  if (global_manager->shop_active) return;
   Vector2 playerPos = {global_manager->player->pos.x + 32,
                        global_manager->player->pos.y + 32};
   if (global_manager->current_level != 0) {
@@ -554,7 +559,8 @@ static void update_collisions_and_entities(float dt) {
     if (!global_manager->bullets[i].active) continue;
     bullet_update(&global_manager->bullets[i], dt);
 
-    if (global_manager->current_level == 10 && !global_manager->dialog->active) {
+    if (global_manager->current_level == 10 &&
+        !global_manager->dialog->active) {
       if (CheckCollisionCircles(
               global_manager->bullets[i].pos, BULLET_RADIUS,
               (struct Vector2){19 * TILE_SIZE, 10 * TILE_SIZE},

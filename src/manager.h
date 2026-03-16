@@ -50,6 +50,8 @@ struct manager {
 
   int money;
   int lives;  // 6 half-hearts (3 full hearts)
+  int ammo;
+  bool shop_active;
   bool has_gun;
   int active_weapon;  // 0: Crowbar, 1: Gun
   float crowbar_cooldown;
