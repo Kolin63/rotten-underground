@@ -548,10 +548,13 @@ static void update_collisions_and_entities(float dt) {
     if (!global_manager->money_items[i].active) continue;
     if (Vector2Distance(playerCenter, global_manager->money_items[i].pos) <
         40.0f) {
+      if (global_manager->money == 0) {
+        static const char* pickup_lines[] = {"Oh, some coins!",
+                                             "Don't mind if I do..."};
+        dialog_show(global_manager->dialog, "Johnny", pickup_lines, 2);
+      }
       global_manager->money += 10;
       global_manager->money_items[i].active = false;
-      static const char* pickup_lines[] = {"Don't mind if I do..."};
-      dialog_show(global_manager->dialog, "Johnny", pickup_lines, 1);
     }
   }
 
