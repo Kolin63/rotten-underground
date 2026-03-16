@@ -418,103 +418,62 @@ static void update_level_script(float dt) {
       dialog_show(global_manager->dialog, "Crazy Guy", l9, 2);
     }
   } else if (global_manager->current_level == 10) {
-    if (!global_manager->boss_active) {
-      if (global_manager->intro_step == 0) {
-        global_manager->intro_step = 1;
-        static const char* b1[] = {"What the... what is that?", "Is that... green goo?"};
-        dialog_show(global_manager->dialog, "Johnny", b1, 2);
-      } else if (global_manager->intro_step == 1 && !global_manager->dialog->active) {
-        global_manager->intro_step = 2;
-        static const char* b2[] = {"Who are you?"};
-        dialog_show(global_manager->dialog, "The Rat King", b2, 1);
-      } else if (global_manager->intro_step == 2 && !global_manager->dialog->active) {
-        global_manager->intro_step = 3;
-        static const char* b3[] = {"I'm just a subway maintenance worker.", "More importantly, how the hell can you talk?"};
-        dialog_show(global_manager->dialog, "Johnny", b3, 2);
-      } else if (global_manager->intro_step == 3 && !global_manager->dialog->active) {
-        global_manager->intro_step = 4;
-        static const char* b4[] = {"Uhh. Dw about it. But wait a second...", "If you're a maintenance worker, that means you're the one who's been fighting my army!"};
-        dialog_show(global_manager->dialog, "The Rat King", b4, 2);
-      } else if (global_manager->intro_step == 4 && !global_manager->dialog->active) {
-        global_manager->intro_step = 5;
-        static const char* b5[] = {"Hey man, I'm just doin my job and trying to get home."};
-        dialog_show(global_manager->dialog, "Johnny", b5, 1);
-      } else if (global_manager->intro_step == 5 && !global_manager->dialog->active) {
-        global_manager->intro_step = 6;
-        static const char* b6[] = {"You kill my rats, I kill you!"};
-        dialog_show(global_manager->dialog, "The Rat King", b6, 1);
-      } else if (global_manager->intro_step == 6 && !global_manager->dialog->active) {
-        global_manager->intro_step = 10;
+      if (!global_manager->boss_active) {
         global_manager->boss_active = true;
         global_manager->boss_hp = 300;
         global_manager->boss_stage = 1;
-      }
-    } else {
-      if (global_manager->boss_hp <= 0 && global_manager->boss_stage == 3) {
-        if (global_manager->intro_step == 30) {
-           global_manager->intro_step = 31;
-           static const char* dead1[] = {"You filthy, disgusting, rodents don't belong here!"};
-           dialog_show(global_manager->dialog, "Johnny", dead1, 1);
-        } else if (global_manager->intro_step == 31 && !global_manager->dialog->active) {
-           global_manager->boss_stage = 4;
-           global_manager->intro_step = 32;
-           static const char* dead2[] = {"Is... Is that Jeff, my roommate?", "Welp, there's no way my boss is gonna gimme overtime...."};
-           dialog_show(global_manager->dialog, "Johnny", dead2, 2);
-        } else if (global_manager->intro_step == 32 && !global_manager->dialog->active) {
-           global_manager->current_level = 11;
-           tilemap_load_level(11);
+        static const char* bossIntro[] = {"Who goes there?!",
+                                          "You shall not pass Graywater!"};
+        dialog_show(global_manager->dialog, "The Rat King", bossIntro, 2);
+      } else {
+        // Boss death logic
+        if (global_manager->dialog->active == false &&
+            global_manager->boss_stage == 4) {
+          global_manager->current_level = 11;
+          tilemap_load_level(11);
+        } else if (global_manager->boss_hp <= 0 &&
+                   global_manager->boss_stage == 3) {
+          global_manager->boss_stage = 4;
+          static const char* bossDead[] = {
+              "Is that Jeff, my roommate?",
+              "Well, there's no way I'm getting paid for overtime..."};
+          dialog_show(global_manager->dialog, "Johnny", bossDead, 2);
+          // Game win logic?
+        } else if (global_manager->boss_hp < 100 &&
+                   global_manager->boss_stage == 2) {
+          global_manager->boss_stage = 3;
+
+          static const char* stage3_rat[] = {
+              "It's not green goo, it's a specially formulated growth serum.",
+              "My kind has been pushed around for long enough, it's time for "
+              "us to rise!"};
+          dialog_show(global_manager->dialog, "The Rat King", stage3_rat, 2);
+
+          // this is to summon 5 rats after he says that line
+          int rats_summoned = 0;
+          for (int i = 0; i < MAX_ENEMIES && rats_summoned < 5; i++) {
+            struct enemy* elem = &global_manager->enemies[i];
+            if (elem->active == true) continue;
+
+            rats_summoned++;
+            elem->pos.x = (3 + rats_summoned * 1.25) * TILE_SIZE;
+            elem->pos.y = 4 * TILE_SIZE;
+            elem->active = true;
+            elem->health = 1;
+            elem->type = 2;
+          }
+        } else if (global_manager->boss_hp < 200 &&
+                   global_manager->boss_stage == 1) {
+          global_manager->boss_stage = 2;
+          static const char* stage2_player[] = {"What's the green goo?"};
+          dialog_show(global_manager->dialog, "Johnny", stage2_player, 1);
         }
-      } else if (global_manager->boss_hp <= 30 && global_manager->boss_stage == 3) {
-        if (global_manager->intro_step == 20) {
-           global_manager->intro_step = 21;
-           static const char* stage3_p[] = {"What have we ever done to you? My kind has just been trying to live!"};
-           dialog_show(global_manager->dialog, "The Rat King", stage3_p, 1);
-        } else if (global_manager->intro_step == 21 && !global_manager->dialog->active) {
-           global_manager->intro_step = 30;
-        }
-      } else if (global_manager->boss_hp < 100 && global_manager->boss_stage == 2) {
-        if (global_manager->intro_step == 14) {
-           global_manager->intro_step = 15;
-           static const char* q2[] = {"What's the serum for?"};
-           dialog_show(global_manager->dialog, "Johnny", q2, 1);
-        } else if (global_manager->intro_step == 15 && !global_manager->dialog->active) {
-           global_manager->intro_step = 16;
-           static const char* ans2[] = {"My kind has been pushed around long enough, it's time for us to rise!"};
-           dialog_show(global_manager->dialog, "The Rat King", ans2, 1);
-        } else if (global_manager->intro_step == 16 && !global_manager->dialog->active) {
-           global_manager->intro_step = 20;
-           global_manager->boss_stage = 3;
-           int rats_summoned = 0;
-           for (int i = 0; i < MAX_ENEMIES && rats_summoned < 10; i++) {
-             struct enemy* elem = &global_manager->enemies[i];
-             if (elem->active == true) continue;
-             rats_summoned++;
-             elem->pos.x = (3 + rats_summoned * 1.25) * TILE_SIZE;
-             elem->pos.y = 4 * TILE_SIZE;
-             elem->active = true;
-             elem->health = 1;
-             elem->type = 2;
-           }
-        }
-      } else if (global_manager->boss_hp < 200 && global_manager->boss_stage == 1) {
-        if (global_manager->intro_step == 10) {
-           global_manager->intro_step = 11;
-           static const char* q1[] = {"What's the green goo?"};
-           dialog_show(global_manager->dialog, "Johnny", q1, 1);
-        } else if (global_manager->intro_step == 11 && !global_manager->dialog->active) {
-           global_manager->intro_step = 12;
-           static const char* ans1[] = {"It's not green goo, it's a specially formulated growth serum."};
-           dialog_show(global_manager->dialog, "The Rat King", ans1, 1);
-        } else if (global_manager->intro_step == 12 && !global_manager->dialog->active) {
-           global_manager->intro_step = 14;
-           global_manager->boss_stage = 2;
-        }
-      }
     }
   }
 }
 
 static void check_level_transition() {
+  if (global_manager->current_level == 10) return;
   if (global_manager->player->pos.x > (MAP_WIDTH * TILE_SIZE) - 70) {
     // Check if all enemies are defeated
     bool all_enemies_dead = true;

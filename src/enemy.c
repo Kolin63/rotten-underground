@@ -17,8 +17,11 @@ void enemies_init(struct enemy enemies[MAX_ENEMIES]) {
 
 void enemies_spawn(struct enemy enemies[MAX_ENEMIES],
                    const struct rat_spawn rat_spawns[32]) {
+  enemies_init(enemies);
   int enemy_idx = 0;
   for (int i = 0; i < 32 && enemy_idx < MAX_ENEMIES; i++) {
+    if (rat_spawns[i].rat_type == 0) continue; // Skip empty spawns
+    
     enemies[enemy_idx].pos.x = (float)(rat_spawns[i].pos.x * TILE_SIZE);
     enemies[enemy_idx].pos.y = (float)(rat_spawns[i].pos.y * TILE_SIZE);
     enemies[enemy_idx].active = true;
@@ -26,6 +29,9 @@ void enemies_spawn(struct enemy enemies[MAX_ENEMIES],
     enemies[enemy_idx].frame = i % 7;
     enemies[enemy_idx].rotation = 0;
     enemies[enemy_idx].type = rat_spawns[i].rat_type;
+    enemies[enemy_idx].health = 10;
+    if (rat_spawns[i].rat_type == 2) enemies[enemy_idx].health = 20;
+    if (rat_spawns[i].rat_type == 3) enemies[enemy_idx].health = 30;
     enemy_idx++;
   }
 }

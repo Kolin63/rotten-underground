@@ -110,19 +110,22 @@ void render_enemies() {
   }
 
   if (mgr->current_level == 10) {
-    Texture2D tex;
-    if (mgr->boss_stage >= 4) {
-      tex = mgr->boss_head_knocked_tex;
-    } else {
-      int idx = mgr->boss_stage - 1;
-      if (idx < 0) idx = 0;
-      if (idx > 2) idx = 2;
-      tex = mgr->boss_tex[idx];
-    }
+    int idx = 0;
+    if (mgr->boss_stage == 1) idx = 0;
+    else if (mgr->boss_stage == 2 || mgr->boss_stage == 3) idx = 1;
+    else idx = 2;
+    Texture2D tex = mgr->boss_tex[idx];
     Rectangle source = {0.0f, 0.0f, (float)tex.width, (float)tex.height};
     Rectangle dest = {18 * TILE_SIZE, 9 * TILE_SIZE, 128, 128};
     Vector2 origin = {16, 16};
     DrawTexturePro(tex, source, dest, origin, 0, WHITE);
+
+    if (idx == 2) {
+      Texture2D head_tex = mgr->boss_head_knocked_tex;
+      Rectangle h_source = {0.0f, 0.0f, (float)head_tex.width, (float)head_tex.height};
+      Rectangle h_dest = {20 * TILE_SIZE, 10 * TILE_SIZE, 64, 64};
+      DrawTexturePro(head_tex, h_source, h_dest, (Vector2){0, 0}, 0, WHITE);
+    }
 
     char healthbar[32];
     snprintf(healthbar, sizeof(healthbar), "%i", mgr->boss_hp);
